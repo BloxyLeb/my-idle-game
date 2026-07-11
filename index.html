@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Idle Tycoon - Complete Edition</title>
+    <title>Idle Tycoon - Professional Edition</title>
     
     <style>
-        /* --- CSS STYLES --- */
+        /* * ==========================================================
+         * SYSTEM: GLOBAL VARIABLES & RESET
+         * ==========================================================
+         */
         :root { 
-            --bg: #0f172a; 
+            --bg-color: #0f172a; 
             --card-bg: #1e293b; 
-            --accent: #10b981; 
-            --text: #f8fafc; 
+            --accent-green: #10b981; 
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8;
             --danger: #ef4444;
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        * { box-sizing: border-box; }
+
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
             margin: 0; 
             padding: 20px; 
             user-select: none; 
@@ -27,260 +35,280 @@
         }
 
         .container { 
-            max-width: 450px; 
+            max-width: 480px; 
             width: 100%;
         }
 
-        /* Settings Modal Layout */
-        #settings-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
+        /* * ==========================================================
+         * UI COMPONENTS: CARDS & BUTTONS
+         * ==========================================================
+         */
+        .card { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 20px; 
+            border: var(--card-border);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .action-button { 
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; 
+            border: none; 
             width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 1000; 
+            padding: 22px; 
+            font-size: 20px; 
+            font-weight: 800; 
+            border-radius: 16px; 
+            cursor: pointer; 
+            box-shadow: 0 10px 15px rgba(16, 185, 129, 0.2);
+            transition: all 0.15s ease;
+            margin-bottom: 20px;
+        }
+
+        .action-button:active { 
+            transform: scale(0.96); 
+        }
+
+        .upgrade-row { 
+            background: #252d3a; 
+            padding: 16px; 
+            border-radius: 12px; 
+            margin-bottom: 12px; 
+            cursor: pointer; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
             display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            opacity: 0; 
-            visibility: hidden; 
-            transition: 0.3s ease; 
-        }
-        #settings-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 20px; width: 80%; border: 1px solid #334155; }
-
-        /* Floating Text Animation */
-        .floating-text { 
-            position: fixed; 
-            pointer-events: none; 
-            font-weight: 900; 
-            font-size: 24px; 
-            z-index: 9999; 
-            text-shadow: 0 0 5px black; 
-            color: var(--accent); 
-            animation: popEffect 0.8s ease-out forwards; 
-        }
-        @keyframes popEffect { 
-            0% { transform: translateY(0) scale(0.5); opacity: 1; } 
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; } 
+            justify-content: space-between; 
+            align-items: center;
+            transition: background 0.2s;
         }
 
-        /* Main UI Elements */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h1 { margin: 0; font-size: 24px; color: var(--accent); }
-        .btn-settings { background: var(--card-bg); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; border: 1px solid #334155; }
-        
-        .stats-card { background: var(--card-bg); padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 20px; border: 1px solid #334155; }
-        .money-display { font-size: 42px; font-weight: 800; color: var(--accent); margin-bottom: 5px; }
-        
-        .btn-mine { 
-            background-color: var(--accent); color: white; border: none; width: 100%; padding: 20px; 
-            font-size: 20px; font-weight: 700; border-radius: 12px; cursor: pointer; 
-            margin-bottom: 20px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); transition: transform 0.1s; 
-        }
-        .btn-mine:active { transform: scale(0.98); }
+        .upgrade-row:hover { background: #2d3748; }
 
-        /* Shop Cards */
-        .upgrade-card { 
-            background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 12px; 
-            cursor: pointer; border: 1px solid #334155; position: relative; overflow: hidden; 
+        /* * ==========================================================
+         * UTILITY CLASSES
+         * ==========================================================
+         */
+        .text-accent { color: var(--accent-green); font-weight: 700; }
+        .text-muted { color: var(--text-muted); font-size: 14px; }
+        .achievement-pill { 
+            background: var(--accent-green); 
+            color: black; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 800; 
+            display: inline-block; 
+            margin-right: 5px; 
         }
-        .bar-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: #334155; }
-        .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
-
-        /* Dashboard */
-        .dashboard { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-top: 25px; border: 1px solid #334155; }
-        .btn-prestige { width: 100%; padding: 14px; background: var(--danger); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <header>
-            <h1>Tycoon</h1>
-            <div class="btn-settings" onclick="document.getElementById('settings-overlay').classList.add('active')">Settings</div>
+        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h1 style="margin:0; font-size: 22px; opacity: 0.9;">OFFICE TYCOON</h1>
+            <div onclick="alert('Auto-Save is running')" style="cursor:pointer; color:var(--text-muted);">Settings</div>
         </header>
 
-        <div class="stats-card">
-            <div id="money" class="money-display">$0</div>
-            <div id="mps" style="color:#94a3b8;">Income: 0/sec</div>
+        <div class="card" style="text-align:center;">
+            <div id="money-display" style="font-size: 48px; font-weight: 900; color: var(--accent-green);">$0</div>
+            <div id="mps-display" class="text-muted">Income: 0/sec</div>
         </div>
         
-        <button class="btn-mine" onclick="clickMoney(event)">MINE MONEY</button>
+        <button class="action-button" onclick="handleManualClick(event)">MINE CAPITAL</button>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="margin:0">Shop</h3>
-            <label style="color:#94a3b8; font-size: 14px;"><input type="checkbox" id="buyMaxToggle"> Buy Max</label>
+        <h3 style="margin: 20px 0 10px 0;">Office Expansion</h3>
+        <div id="shop-container">
+            <div class="upgrade-row" onclick="purchaseUpgrade('intern')">
+                <div><strong>Intern</strong><br><span class="text-muted">Level <span id="count-intern">0</span></span></div>
+                <div id="cost-intern" class="text-accent">$10</div>
+            </div>
+            <div class="upgrade-row" onclick="purchaseUpgrade('auto')">
+                <div><strong>Auto-Miner</strong><br><span class="text-muted">Level <span id="count-auto">0</span></span></div>
+                <div id="cost-auto" class="text-accent">$50</div>
+            </div>
+            <div class="upgrade-row" onclick="purchaseUpgrade('factory')">
+                <div><strong>Factory</strong><br><span class="text-muted">Level <span id="count-factory">0</span></span></div>
+                <div id="cost-factory" class="text-accent">$500</div>
+            </div>
+            <div class="upgrade-row" onclick="purchaseUpgrade('office')">
+                <div><strong>Office Complex</strong><br><span class="text-muted">Level <span id="count-office">0</span></span></div>
+                <div id="cost-office" class="text-accent">$2,500</div>
+            </div>
         </div>
 
-        <div id="shop">
-            <div class="upgrade-card" onclick="buyUpgrade('intern')">
-                <div style="display:flex; justify-content:space-between;"><span>Intern (Lv <span id="count-intern">0</span>)</span> <span id="cost-intern" style="color:var(--accent); font-weight:700;">$10</span></div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-intern"></div></div>
-            </div>
-            <div class="upgrade-card" onclick="buyUpgrade('auto')">
-                <div style="display:flex; justify-content:space-between;"><span>Auto-Miner (Lv <span id="count-auto">0</span>)</span> <span id="cost-auto" style="color:var(--accent); font-weight:700;">$50</span></div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-auto"></div></div>
-            </div>
-            <div class="upgrade-card" onclick="buyUpgrade('factory')">
-                <div style="display:flex; justify-content:space-between;"><span>Factory (Lv <span id="count-factory">0</span>)</span> <span id="cost-factory" style="color:var(--accent); font-weight:700;">$500</span></div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-factory"></div></div>
-            </div>
+        <div class="card">
+            <h3 style="margin-top:0;">Career Milestones</h3>
+            <div id="achievements-list" class="text-muted">Keep grinding to unlock achievements...</div>
         </div>
 
-        <div class="dashboard">
-            <div style="display:flex; justify-content:space-between;"><h3>Dashboard</h3><span id="multiplier">Multiplier: 1.0x</span></div>
-            <button id="prestigeBtn" class="btn-prestige" onclick="prestige()">PRESTIGE (Locked)</button>
-        </div>
-    </div>
-
-    <div id="settings-overlay">
-        <div class="modal-content">
-            <h3>Settings</h3>
-            <label><input type="checkbox" id="soundToggle" checked> Enable Sounds</label><br><br>
-            <button onclick="resetGame()" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--danger); color:white; font-weight:bold; margin-bottom:10px;">HARD RESET</button>
-            <button onclick="document.getElementById('settings-overlay').classList.remove('active')" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--accent); color:white; font-weight:bold;">CLOSE</button>
+        <div class="card">
+            <h3 style="margin-top:0;">Prestige System</h3>
+            <p style="font-size:14px; margin-bottom:15px;">Total Lifetime Earnings: <span id="total-earnings">$0</span></p>
+            <button id="prestige-btn" onclick="initiatePrestige()" style="width:100%; padding:14px; border-radius:10px; border:none; background:var(--danger); color:white; font-weight:bold; cursor:pointer;">PRESTIGE (Locked)</button>
         </div>
     </div>
 
     <script>
-        /* --- JAVASCRIPT LOGIC --- */
-        let money = 0, perClick = 1, perSecond = 0, totalEarnings = 0, prestigeMultiplier = 1.0;
-        let costs = { intern: 10, auto: 50, factory: 500 };
-        let counts = { intern: 0, auto: 0, factory: 0 };
-        
-        // Initialize Audio context
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        /* * ==========================================================
+         * GAME STATE INITIALIZATION
+         * ==========================================================
+         */
+        let state = {
+            money: 0,
+            perClick: 1,
+            perSecond: 0,
+            totalEarnings: 0,
+            prestigeMultiplier: 1.0,
+            costs: { intern: 10, auto: 50, factory: 500, office: 2500 },
+            counts: { intern: 0, auto: 0, factory: 0, office: 0 }
+        };
+
+        let audioContext = null;
 
         /**
-         * Plays a generated synthesized sound on click
+         * Initializes audio context on user interaction (Required by browsers)
+         */
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        /**
+         * Plays a synthesized click sound
          */
         function playClickSound() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.frequency.value = 600;
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.frequency.value = 500;
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.1);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
         }
 
         /**
-         * Generates floating text at the click location
+         * Formats numbers to currency strings
          */
-        function spawnFloatingText(event, amount) {
-            let float = document.createElement('div');
-            float.className = 'floating-text';
-            float.innerText = `+$${Math.floor(amount)}`;
-            float.style.left = (event.clientX || 200) + 'px';
-            float.style.top = (event.clientY || 300) + 'px';
-            document.body.appendChild(float);
-            setTimeout(() => float.remove(), 1000);
+        function formatMoney(num) {
+            return '$' + Math.floor(num).toLocaleString();
         }
 
         /**
-         * Main click handler
+         * Handles the manual interaction (The "Mine" button)
          */
-        function clickMoney(event) {
-            let income = Math.ceil(perClick * prestigeMultiplier);
-            money += income; totalEarnings += income;
-            spawnFloatingText(event, income);
-            if(document.getElementById('soundToggle').checked) playClickSound();
-            updateDisplay();
+        function handleManualClick(event) {
+            let income = Math.ceil(state.perClick * state.prestigeMultiplier);
+            state.money += income;
+            state.totalEarnings += income;
+            playClickSound();
+            updateUI();
         }
 
         /**
-         * Buys upgrades, supporting Buy Max logic
+         * Handles purchasing upgrades
          */
-        function buyUpgrade(type) {
-            let isMax = document.getElementById('buyMaxToggle').checked;
-            let iterations = isMax ? 999 : 1;
-            for(let i=0; i<iterations; i++) {
-                if(money >= costs[type]) {
-                    money -= costs[type];
-                    counts[type]++;
-                    if(type === 'intern') perClick++;
-                    if(type === 'auto') perSecond += 1;
-                    if(type === 'factory') perSecond += 5;
-                    costs[type] = Math.floor(costs[type] * 1.15);
-                } else break;
+        function purchaseUpgrade(type) {
+            if (state.money >= state.costs[type]) {
+                state.money -= state.costs[type];
+                state.counts[type]++;
+                
+                // Update stats based on type
+                if (type === 'intern') state.perClick += 1;
+                if (type === 'auto') state.perSecond += 2;
+                if (type === 'factory') state.perSecond += 10;
+                if (type === 'office') state.perSecond += 50;
+                
+                // Increase cost
+                state.costs[type] = Math.floor(state.costs[type] * 1.25);
+                updateUI();
             }
-            updateDisplay();
         }
 
         /**
-         * Updates all UI elements
+         * Calculates if milestones are met
          */
-        function updateDisplay() {
-            document.getElementById('money').innerText = '$' + Math.floor(money);
-            document.getElementById('mps').innerText = `Income: ${Math.floor(perSecond * prestigeMultiplier)}/sec`;
-            document.getElementById('multiplier').innerText = `Multiplier: ${prestigeMultiplier.toFixed(1)}x`;
+        function updateAchievements() {
+            const container = document.getElementById('achievements-list');
+            let achs = [];
+            if (state.totalEarnings >= 1000000) achs.push("Millionaire");
+            if (state.counts.office >= 1) achs.push("CEO");
             
-            for(let t in costs) {
-                document.getElementById(`cost-${t}`).innerText = `$${costs[t]}`;
-                document.getElementById(`count-${t}`).innerText = counts[t];
-                let percent = Math.min((money / costs[t]) * 100, 100);
-                document.getElementById(`bar-${t}`).style.width = percent + '%';
+            if (achs.length > 0) {
+                container.innerHTML = achs.map(a => `<span class="achievement-pill">${a}</span>`).join('');
+            }
+        }
+
+        /**
+         * Central UI update loop
+         */
+        function updateUI() {
+            document.getElementById('money-display').innerText = formatMoney(state.money);
+            document.getElementById('mps-display').innerText = `Income: ${formatMoney(state.perSecond * state.prestigeMultiplier)}/sec`;
+            document.getElementById('total-earnings').innerText = formatMoney(state.totalEarnings);
+            
+            // Sync counts and costs
+            for(let key in state.counts) {
+                document.getElementById(`count-${key}`).innerText = state.counts[key];
+                document.getElementById(`cost-${key}`).innerText = formatMoney(state.costs[key]);
             }
             
-            let btn = document.getElementById('prestigeBtn');
-            let canPrestige = totalEarnings >= 1000000;
+            // Sync Prestige Button
+            const btn = document.getElementById('prestige-btn');
+            const canPrestige = state.totalEarnings >= 1000000;
             btn.style.opacity = canPrestige ? "1" : "0.5";
-            btn.innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Locked)";
+            btn.style.cursor = canPrestige ? "pointer" : "not-allowed";
+            btn.innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Need $1M)";
             
+            updateAchievements();
             saveGame();
         }
 
         /**
-         * Resets the entire game
-         */
-        function resetGame() {
-            if(confirm("Are you sure you want to delete all progress?")) {
-                localStorage.removeItem('tycoonSave');
-                location.reload();
-            }
-        }
-
-        /**
-         * Saves data to local browser storage
+         * Save game to local storage
          */
         function saveGame() {
-            localStorage.setItem('tycoonSave', JSON.stringify({ 
-                money, perClick, perSecond, costs, counts, totalEarnings, prestigeMultiplier, time: Date.now() 
-            }));
+            localStorage.setItem('tycoonSave', JSON.stringify(state));
         }
 
         /**
          * Prestige mechanics
          */
-        function prestige() {
-            if(totalEarnings >= 1000000 && confirm("Reset everything for +0.5x multiplier?")) {
-                prestigeMultiplier += 0.5; money = 0; perClick = 1; perSecond = 0; totalEarnings = 0; 
-                costs = { intern: 10, auto: 50, factory: 500 }; counts = { intern: 0, auto: 0, factory: 0 };
-                updateDisplay(); location.reload();
+        function initiatePrestige() {
+            if (state.totalEarnings >= 1000000) {
+                if (confirm("Reset progress for a permanent 0.5x multiplier?")) {
+                    state.prestigeMultiplier += 0.5;
+                    state.money = 0; state.perClick = 1; state.perSecond = 0; state.totalEarnings = 0;
+                    state.costs = { intern: 10, auto: 50, factory: 500, office: 2500 };
+                    state.counts = { intern: 0, auto: 0, factory: 0, office: 0 };
+                    updateUI();
+                }
             }
         }
 
         /**
-         * Bootup logic: Loads save and starts the ticker
+         * Bootloader
          */
         window.onload = () => {
-            const s = JSON.parse(localStorage.getItem('tycoonSave'));
-            if(s) {
-                let off = Math.floor(((Date.now() - s.time)/1000) * (s.perSecond || 0) * (s.prestigeMultiplier || 1.0));
-                if(off > 0) alert(`Welcome back! You earned $${off} while away.`);
-                money = (s.money || 0) + (off || 0); 
-                totalEarnings = (s.totalEarnings || 0) + (off || 0);
-                perClick = s.perClick; perSecond = s.perSecond; costs = s.costs; counts = s.counts; prestigeMultiplier = s.prestigeMultiplier;
+            const saved = localStorage.getItem('tycoonSave');
+            if (saved) {
+                state = JSON.parse(saved);
             }
-            setInterval(() => { 
-                money += (perSecond * prestigeMultiplier); 
-                totalEarnings += (perSecond * prestigeMultiplier); 
-                updateDisplay(); 
+            
+            setInterval(() => {
+                state.money += (state.perSecond * state.prestigeMultiplier);
+                state.totalEarnings += (state.perSecond * state.prestigeMultiplier);
+                updateUI();
             }, 1000);
-            updateDisplay();
+            
+            updateUI();
         };
     </script>
 </body>
