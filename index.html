@@ -11,10 +11,9 @@
         .button-group { display: flex; flex-direction: column; gap: 10px; }
         button { padding: 15px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #0f3460; color: white; transition: 0.2s; }
         button:active { transform: scale(0.95); }
-        button:disabled { background-color: #333; color: #666; }
-        #clickBtn { background-color: #4ecca3; color: #1a1a2e; font-weight: bold; padding: 30px; font-size: 20px; }
-        .data-btns { margin-top: 20px; }
-        .data-btns button { font-size: 12px; padding: 5px 10px; background-color: #333; }
+        button:disabled { background-color: #333; color: #666; opacity: 0.6; }
+        #clickBtn { background-color: #4ecca3; color: #1a1a2e; font-weight: bold; padding: 30px; font-size: 20px; transition: transform 0.1s; }
+        #clickBtn:active { transform: scale(0.90); }
     </style>
 </head>
 <body>
@@ -27,32 +26,27 @@
         
         <div class="button-group">
             <button id="clickBtn" onclick="clickMoney()">MINE MONEY</button>
-            <button onclick="buyUpgrade('intern')">Hire Intern ($10) [+1 Click]</button>
-            <button onclick="buyUpgrade('auto')">Auto-Miner ($50) [+$1/sec]</button>
-            <button onclick="buyUpgrade('factory')">Mega Factory ($500) [+$10/sec]</button>
+            <button id="btn-intern" onclick="buyUpgrade('intern')">Intern ($10)</button>
+            <button id="btn-auto" onclick="buyUpgrade('auto')">Auto-Miner ($50)</button>
+            <button id="btn-factory" onclick="buyUpgrade('factory')">Factory ($500)</button>
         </div>
 
-        <div class="data-btns">
-            <button onclick="saveGame()">Save Game</button>
-            <button onclick="resetGame()" style="background-color: #a00;">Reset Data</button>
+        <div style="margin-top: 20px;">
+            <button onclick="resetGame()" style="background-color: #a00; font-size: 10px;">Reset All Progress</button>
         </div>
     </div>
 
     <script>
-        let money = 0;
-        let perClick = 1;
-        let perSecond = 0;
+        let money = 0, perClick = 1, perSecond = 0;
+        let costs = { intern: 10, auto: 50, factory: 500 };
 
-        // Load game on start
         window.onload = () => {
             const saved = localStorage.getItem('idleGameSave');
             if (saved) {
                 const data = JSON.parse(saved);
-                money = data.money;
-                perClick = data.perClick;
-                perSecond = data.perSecond;
-                updateDisplay();
+                money = data.money; perClick = data.perClick; perSecond = data.perSecond; costs = data.costs;
             }
+            updateDisplay();
         };
 
         function clickMoney() {
@@ -61,32 +55,32 @@
         }
 
         function buyUpgrade(type) {
-            if (type === 'intern' && money >= 10) {
-                money -= 10; perClick += 1;
-            } else if (type === 'auto' && money >= 50) {
-                money -= 50; perSecond += 1;
-            } else if (type === 'factory' && money >= 500) {
-                money -= 500; perSecond += 10;
-            } else {
-                alert("Not enough money!");
-                return;
+            if (money >= costs[type]) {
+                money -= costs[type];
+                if (type === 'intern') perClick += 1;
+                if (type === 'auto') perSecond += 1;
+                if (type === 'factory') perSecond += 10;
+                
+                costs[type] = Math.floor(costs[type] * 1.15); // Increase price by 15%
+                updateDisplay();
+                saveGame();
             }
-            updateDisplay();
-            saveGame();
         }
 
         function updateDisplay() {
             document.getElementById('money').innerText = '$' + Math.floor(money);
             document.getElementById('mps').innerText = perSecond;
+            document.getElementById('btn-intern').innerText = `Hire Intern ($${costs.intern})`;
+            document.getElementById('btn-auto').innerText = `Auto-Miner ($${costs.auto})`;
+            document.getElementById('btn-factory').innerText = `Factory ($${costs.factory})`;
         }
 
         function saveGame() {
-            const data = { money, perClick, perSecond };
-            localStorage.setItem('idleGameSave', JSON.stringify(data));
+            localStorage.setItem('idleGameSave', JSON.stringify({ money, perClick, perSecond, costs }));
         }
 
         function resetGame() {
-            if(confirm("Are you sure? This erases everything!")) {
+            if(confirm("Wipe all data?")) {
                 localStorage.removeItem('idleGameSave');
                 location.reload();
             }
@@ -95,7 +89,6 @@
         setInterval(() => {
             money += perSecond;
             updateDisplay();
-            if (Math.random() > 0.9) saveGame(); // Auto-save 10% of the time
         }, 1000);
     </script>
 </body>
