@@ -3,417 +3,445 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Empire: Nebula Roast</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <title>Coffee Empire: Hyper-Caffeinated</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0f0a08;
-            --panel: rgba(30, 20, 15, 0.8);
-            --accent: #ff9d5c;
-            --text: #fdf5f0;
-            --prestige-bg: #0f0a08;
+            --bg: #0a0908;
+            --card: rgba(26, 22, 20, 0.9);
+            --accent: #d4a373;
+            --accent-bright: #faedcd;
+            --danger: #e63946;
+            --success: #a7c957;
+            --text: #f1f1f1;
+            --gold: #ffb703;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
         body {
-            margin: 0; font-family: 'Outfit', sans-serif;
-            background: var(--prestige-bg); color: var(--text);
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
-            transition: background 2s ease;
+            margin: 0; font-family: 'Bricolage Grotesque', sans-serif;
+            background: var(--bg); color: var(--text);
+            height: 100vh; height: -webkit-fill-available;
+            overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* Top HUD */
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        /* --- Header / HUD --- */
         #hud {
-            padding: 15px; background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px); display: flex;
-            justify-content: space-around; align-items: center;
-            border-bottom: 2px solid var(--accent); z-index: 100;
+            padding: 20px; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center;
         }
-        .stat-box b { display: block; font-size: 1.4rem; color: var(--accent); }
-        .stat-box span { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; }
+        .stat b { display: block; font-size: 1.6rem; color: var(--accent-bright); font-family: 'JetBrains Mono', monospace; }
+        .stat span { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Layout */
-        #game-container { display: flex; flex: 1; overflow: hidden; }
+        /* --- Layout --- */
+        #main-container { display: flex; flex: 1; overflow: hidden; }
 
-        /* Left Side: Clicker */
-        #clicker-pane {
-            flex: 1.2; display: flex; flex-direction: column;
+        /* Left: Clicking Area */
+        #clicker-view {
+            flex: 1.5; display: flex; flex-direction: column;
             align-items: center; justify-content: center; position: relative;
-            padding: 20px;
+            background: radial-gradient(circle at center, #1c1512 0%, #0a0908 100%);
         }
 
-        .cup-zone {
-            position: relative; cursor: pointer;
-            transition: transform 0.05s; z-index: 5;
+        #cup-container {
+            position: relative; cursor: pointer; transition: transform 0.05s;
+            z-index: 10;
         }
-        .cup-zone:active { transform: scale(0.9); }
+        #cup-container:active { transform: scale(0.92); }
         
-        #main-cup { width: 220px; filter: drop-shadow(0 0 30px var(--accent)); }
-        .steam {
-            position: absolute; top: -40px; left: 50%;
-            transform: translateX(-50%); font-size: 2rem;
-            animation: steamUp 2s infinite ease-out; opacity: 0;
+        #coffee-svg { width: 280px; filter: drop-shadow(0 0 50px rgba(212, 163, 115, 0.2)); }
+        
+        .floating-bean {
+            position: absolute; pointer-events: none; font-size: 1.5rem;
+            animation: floatOut 1s ease-out forwards; z-index: 100;
         }
 
-        @keyframes steamUp {
-            0% { transform: translate(-50%, 0) scale(1); opacity: 0; }
-            50% { opacity: 0.6; }
-            100% { transform: translate(-50%, -80px) scale(1.5); opacity: 0; }
+        /* Right: UI Tabs Area */
+        #ui-view {
+            flex: 1; background: var(--card); border-left: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; min-width: 380px;
         }
 
-        /* Center Multiplier Tag */
-        #frenzy-overlay {
-            position: absolute; top: 20%; font-weight: 900;
-            font-size: 2.5rem; color: #fff; text-shadow: 0 0 20px #ff0;
-            display: none; pointer-events: none; z-index: 20;
+        .tab-bar { display: flex; background: rgba(0,0,0,0.3); }
+        .tab-btn {
+            flex: 1; padding: 18px 10px; border: none; background: none;
+            color: var(--text); cursor: pointer; font-family: inherit;
+            font-weight: 600; font-size: 0.8rem; opacity: 0.4;
+            border-bottom: 2px solid transparent; transition: 0.3s;
+        }
+        .tab-btn.active { opacity: 1; border-bottom: 2px solid var(--accent); background: rgba(255,255,255,0.03); }
+
+        .pane { flex: 1; overflow-y: auto; padding: 20px; display: none; }
+        .pane.active { display: block; }
+
+        /* --- Shop UI --- */
+        .shop-controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .buy-qty {
+            flex: 1; padding: 10px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); color: #fff;
+            border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+        }
+        .buy-qty.active { background: var(--accent); color: #000; font-weight: bold; }
+
+        .item-card {
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 15px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.2s; cursor: pointer;
+        }
+        .item-card:hover { background: rgba(255,255,255,0.06); border-color: var(--accent); }
+        .item-card.locked { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+        
+        .item-info b { display: block; font-size: 1.1rem; color: var(--accent); }
+        .item-info span { font-size: 0.75rem; opacity: 0.6; }
+        .item-cost { text-align: right; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+
+        /* --- Relic System --- */
+        .gacha-box {
+            background: linear-gradient(135deg, #2c1b12, #4e342e);
+            padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;
+            border: 2px solid var(--gold);
+        }
+        .relic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .relic-card {
+            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;
+            font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Right Side: UI */
-        #ui-pane {
-            flex: 1; background: var(--panel);
-            backdrop-filter: blur(15px); border-left: 1px solid rgba(255,255,255,0.1);
-            display: flex; flex-direction: column;
+        /* --- Notifications --- */
+        #toast-container {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; pointer-events: none;
+        }
+        .toast {
+            background: var(--danger); color: white; padding: 12px 25px;
+            border-radius: 50px; margin-top: 10px; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); animation: slideUp 0.3s ease-out;
         }
 
-        .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .tab {
-            flex: 1; padding: 15px; text-align: center; cursor: pointer;
-            font-weight: 600; font-size: 0.9rem; opacity: 0.5;
-        }
-        .tab.active { opacity: 1; border-bottom: 3px solid var(--accent); background: rgba(255,157,92,0.1); }
-
-        .content-scroll { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; }
-
-        /* Shop Elements */
-        .controls { display: flex; gap: 5px; margin-bottom: 15px; }
-        .q-btn {
-            flex: 1; padding: 8px; background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1); color: white;
-            border-radius: 4px; cursor: pointer; font-size: 0.8rem;
-        }
-        .q-btn.active { background: var(--accent); color: #000; font-weight: bold; }
-
-        .upgrade-card {
-            background: rgba(255,255,255,0.03); border-radius: 8px;
-            padding: 12px; margin-bottom: 10px; display: flex;
-            justify-content: space-between; align-items: center;
-            border: 1px solid rgba(255,255,255,0.05); transition: 0.2s;
-            cursor: pointer;
-        }
-        .upgrade-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
-        .upgrade-card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
-
-        .u-info b { color: var(--accent); display: block; }
-        .u-info i { font-size: 0.75rem; opacity: 0.6; display: block; font-style: normal; }
-        .u-cost { font-weight: 900; font-size: 1rem; }
-
-        /* Floating Text */
-        .float-text {
-            position: absolute; pointer-events: none;
-            font-weight: 900; color: white; animation: floatUp 0.8s forwards;
-            z-index: 1000;
-        }
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
-        }
-
-        /* Prestige Button */
-        .prestige-btn {
-            width: 100%; padding: 20px; background: linear-gradient(45deg, #6200ea, #ff9d5c);
-            border: none; border-radius: 8px; color: white; font-weight: 900;
-            cursor: pointer; margin-top: 20px;
-        }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes floatOut { to { transform: translateY(-100px) translateX(20px) rotate(20deg); opacity: 0; } }
 
         /* Mobile */
-        @media (max-width: 768px) {
-            #game-container { flex-direction: column; }
-            #ui-pane { flex: 1.5; }
-            #main-cup { width: 140px; }
-            #hud { padding: 10px; }
-            .stat-box b { font-size: 1rem; }
+        @media (max-width: 800px) {
+            #main-container { flex-direction: column; }
+            #ui-view { min-width: 100%; flex: 1.2; }
+            #hud { grid-template-columns: 1fr; text-align: center; gap: 10px; }
         }
     </style>
 </head>
 <body>
 
+    <div id="toast-container"></div>
+
     <div id="hud">
-        <div class="stat-box">
-            <span id="label-beans">Total Beans</span>
-            <b id="beans-val">0</b>
-        </div>
-        <div class="stat-box">
-            <span>Per Second</span>
-            <b id="cps-val">0</b>
-        </div>
-        <div class="stat-box">
-            <span>Prestige Multi</span>
-            <b id="multi-val">1.0x</b>
-        </div>
+        <div class="stat"><span>Current Brew</span><b id="bean-count">0</b></div>
+        <div class="stat"><span>Production/sec</span><b id="cps-count">0</b></div>
+        <div class="stat"><span>Relic Multi</span><b id="multi-count">1.0x</b></div>
     </div>
 
-    <div id="game-container">
-        <div id="clicker-pane">
-            <div id="frenzy-overlay">BEAN FRENZY! x7</div>
-            <div class="cup-zone" id="cup">
-                <div class="steam">♨</div>
-                <div class="steam" style="animation-delay: 0.5s">♨</div>
-                <svg id="main-cup" viewBox="0 0 100 100">
-                    <path d="M20,30 Q20,80 50,80 Q80,80 80,30 Z" fill="#fff"/>
-                    <path d="M25,35 Q25,75 50,75 Q75,75 75,35 Z" fill="#4E342E"/>
-                    <rect x="15" y="25" width="70" height="8" rx="4" fill="#eee"/>
-                    <path d="M80,40 Q95,40 95,55 Q95,70 80,70" fill="none" stroke="#fff" stroke-width="5"/>
+    <div id="main-container">
+        <section id="clicker-view">
+            <div id="cup-container">
+                <svg id="coffee-svg" viewBox="0 0 100 100">
+                    <path d="M20,30 Q20,85 50,85 Q80,85 80,30" fill="none" stroke="var(--accent)" stroke-width="3"/>
+                    <path d="M22,32 Q22,83 50,83 Q78,83 78,32 Z" fill="#2c1b12"/>
+                    <path d="M80,40 Q95,40 95,55 Q95,70 80,70" fill="none" stroke="var(--accent-bright)" stroke-width="4"/>
+                    <rect x="15" y="25" width="70" height="10" rx="5" fill="var(--accent-bright)"/>
                 </svg>
             </div>
-        </div>
+        </section>
 
-        <div id="ui-pane">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('shop')">UPGRADES</div>
-                <div class="tab" onclick="switchTab('prestige')">PRESTIGE</div>
-                <div class="tab" onclick="switchTab('settings')">SETTINGS</div>
+        <section id="ui-view">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="showTab('shop')">EQUIPMENT</button>
+                <button class="tab-btn" onclick="showTab('relics')">RELICS</button>
+                <button class="tab-btn" onclick="showTab('stats')">EMPIRE</button>
             </div>
 
-            <div id="tab-shop" class="content-scroll active-tab">
-                <div class="controls">
-                    <button class="q-btn active" onclick="setQty(1)">x1</button>
-                    <button class="q-btn" onclick="setQty(10)">x10</button>
-                    <button class="q-btn" onclick="setQty(100)">x100</button>
+            <div id="shop-pane" class="pane active">
+                <div class="shop-controls">
+                    <button class="buy-qty active" onclick="setBuyQty(1)">X1</button>
+                    <button class="buy-qty" onclick="setBuyQty(10)">X10</button>
+                    <button class="buy-qty" onclick="setBuyQty('MAX')">MAX</button>
                 </div>
-                <div id="shop-list"></div>
+                <div id="shop-items"></div>
             </div>
 
-            <div id="tab-prestige" class="content-scroll" style="display:none">
-                <h2>Fresh Roast</h2>
-                <p>Reset all beans and upgrades for a permanent production boost based on your lifetime earnings.</p>
-                <div id="prestige-info" style="margin: 20px 0; font-size: 1.2rem; color: var(--accent);">
-                    Potential Bonus: +0%
+            <div id="relics-pane" class="pane">
+                <div class="gacha-box">
+                    <h3>Ancient Grinder</h3>
+                    <p>Roll for a random Relic</p>
+                    <button class="buy-qty active" style="width:100%" onclick="rollRelic()">ROLL (5,000 Beans)</button>
                 </div>
-                <button class="prestige-btn" onclick="prestige()">PERFORM FRESH ROAST</button>
-                <h3 style="margin-top:40px">Achievements</h3>
-                <div id="ach-list"></div>
+                <h3>Your Artifacts</h3>
+                <div id="relic-list" class="relic-grid"></div>
             </div>
 
-            <div id="tab-settings" class="content-scroll" style="display:none">
-                <h3>Settings</h3>
-                <label><input type="checkbox" id="mute-check"> Mute Sounds</label>
-                <br><br>
-                <button class="q-btn" onclick="hardReset()" style="background:#ff4444">Wipe All Progress</button>
-                <p style="margin-top:20px; opacity:0.5; font-size:0.8rem">Auto-saving to LocalStorage...</p>
+            <div id="stats-pane" class="pane">
+                <div class="gacha-box" style="border-color: var(--accent); text-align: left;">
+                    <h3>Empire Stats</h3>
+                    <p>Lifetime Beans: <span id="stat-lifetime">0</span></p>
+                    <p>Total Clicks: <span id="stat-clicks">0</span></p>
+                    <p>Prestige Multiplier: <span id="stat-prestige">1.0x</span></p>
+                </div>
+                <button class="buy-qty" style="width:100%; background: var(--danger); color:white" onclick="hardReset()">Wipe Save</button>
             </div>
-        </div>
+        </section>
     </div>
 
     <script>
-        // --- Core Variables ---
-        let state = {
-            beans: 0,
-            totalLifetime: 0,
-            prestigeMulti: 1.0,
-            inventory: {},
-            buyQty: 1,
-            lastSave: Date.now()
-        };
-
-        const baseItems = [
-            { id: 't1', name: 'Auto-Stirrer', cost: 15, cps: 0.5, desc: 'A spoon that moves by itself.' },
-            { id: 't2', name: 'Coffee Intern', cost: 100, cps: 3, desc: 'Fresh out of college.' },
-            { id: 't3', name: 'French Press', cost: 1100, cps: 15, desc: 'Getting serious now.' },
-            { id: 't4', name: 'Espresso Unit', cost: 12000, cps: 65, desc: 'High pressure brewing.' },
-            { id: 't5', name: 'Coffee Truck', cost: 130000, cps: 350, desc: 'Expanding the reach.' },
-            { id: 't6', name: 'Local Cafe', cost: 1400000, cps: 1800, desc: 'Own the street.' },
-            { id: 't7', name: 'Industrial Roastery', cost: 20000000, cps: 12000, desc: 'Global supply chain.' },
-            { id: 't8', name: 'Coffee Moonbase', cost: 500000000, cps: 95000, desc: 'Low gravity beans.' }
+        // --- Game Constants & Data ---
+        const ITEMS = [
+            { id: 'intern', name: 'Coffee Intern', baseCost: 15, baseCps: 0.5, desc: 'Taps the cup for college credit.' },
+            { id: 'press', name: 'French Press', baseCost: 100, baseCps: 4, desc: 'Coarse grounds, steady gains.' },
+            { id: 'moka', name: 'Moka Pot', baseCost: 1100, baseCps: 18, desc: 'High-pressure stovetop brewing.' },
+            { id: 'espresso', name: 'Espresso Engine', baseCost: 12000, baseCps: 75, desc: 'Professional steam power.' },
+            { id: 'roaster', name: 'Bulk Roaster', baseCost: 130000, baseCps: 380, desc: 'Turning beans black by the ton.' },
+            { id: 'cafe', name: 'Urban Cafe', baseCost: 1400000, baseCps: 1900, desc: 'A hub for caffeine addicts.' },
+            { id: 'plantation', name: 'Coffee Plantation', baseCost: 20000000, baseCps: 11000, desc: 'Control the entire source.' },
+            { id: 'star', name: 'Dyson Coffee Ring', baseCost: 500000000, baseCps: 85000, desc: 'Siphon energy from a sun to roast.' }
         ];
 
-        let frenzyTimer = 0;
-        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const RELICS = [
+            { name: 'Golden Bean', multi: 1.2, rarity: 'Common' },
+            { name: 'Silver Stirrer', multi: 1.5, rarity: 'Rare' },
+            { name: 'Ancient Mug', multi: 2.0, rarity: 'Epic' },
+            { name: 'Caffeine Nebula', multi: 5.0, rarity: 'Legendary' }
+        ];
 
-        // --- Audio Synth ---
-        function playSound(freq, type, dur) {
-            if (document.getElementById('mute-check').checked) return;
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + dur);
-        }
+        // --- State Management ---
+        let state = {
+            beans: 0,
+            lifetime: 0,
+            clicks: 0,
+            cps: 0,
+            buyQty: 1,
+            inventory: {},
+            relics: [],
+            prestigeMulti: 1.0
+        };
 
-        // --- Logic ---
-        function init() {
-            let saved = localStorage.getItem('NebulaRoastSave');
-            if (saved) state = JSON.parse(saved);
-            
-            // Initialize 100 levels of upgrades mathematically
-            baseItems.forEach(item => {
-                if (!state.inventory[item.id]) state.inventory[item.id] = 0;
-            });
+        // Initialize Inventory
+        ITEMS.forEach(i => state.inventory[i.id] = 0);
 
-            renderShop();
-            gameLoop();
-        }
-
-        function gameLoop() {
-            setInterval(() => {
-                let currentCps = calculateCps();
-                let gain = (currentCps / 10);
-                if (frenzyTimer > 0) {
-                    gain *= 7;
-                    frenzyTimer--;
-                    document.getElementById('frenzy-overlay').style.display = 'block';
-                } else {
-                    document.getElementById('frenzy-overlay').style.display = 'none';
-                }
-
-                state.beans += gain;
-                state.totalLifetime += gain;
-                updateHUD();
-                
-                // Random Frenzy Spawn (0.1% chance per tick)
-                if (Math.random() < 0.001 && frenzyTimer <= 0) {
-                    frenzyTimer = 100; // 10 seconds
-                    playSound(880, 'triangle', 0.5);
-                }
-            }, 100);
-
-            setInterval(() => {
-                localStorage.setItem('NebulaRoastSave', JSON.stringify(state));
-            }, 5000);
+        // --- Core Functions ---
+        function addBeans(amt) {
+            state.beans += amt;
+            state.lifetime += amt;
+            updateHUD();
         }
 
         function calculateCps() {
-            let total = 0;
-            baseItems.forEach(item => {
-                total += (state.inventory[item.id] * item.cps);
+            let base = 0;
+            ITEMS.forEach(item => {
+                base += (state.inventory[item.id] * item.baseCps);
             });
-            return total * state.prestigeMulti;
-        }
-
-        function updateHUD() {
-            document.getElementById('beans-val').innerText = Math.floor(state.beans).toLocaleString();
-            document.getElementById('cps-val').innerText = (calculateCps() * (frenzyTimer > 0 ? 7 : 1)).toFixed(1);
-            document.getElementById('multi-val').innerText = state.prestigeMulti.toFixed(2) + 'x';
             
-            // Update prestige potential
-            let pot = Math.max(0, (Math.floor(Math.sqrt(state.totalLifetime / 1000000) * 10) / 10));
-            document.getElementById('prestige-info').innerText = `Potential Bonus Multiplier: +${pot}x`;
-
-            // Dim/Light upgrades
-            renderShop();
-        }
-
-        function handleCupClick(e) {
-            let clickPower = (1 + (calculateCps() * 0.05)) * state.prestigeMulti;
-            if (frenzyTimer > 0) clickPower *= 7;
+            let relicMulti = 1;
+            state.relics.forEach(r => relicMulti *= r.multi);
             
-            state.beans += clickPower;
-            state.totalLifetime += clickPower;
-            
-            playSound(150 + Math.random() * 50, 'sine', 0.1);
-            
-            // Pop effect
-            const x = e.clientX || e.touches[0].clientX;
-            const y = e.clientY || e.touches[0].clientY;
-            createFloatText(x, y, `+${Math.floor(clickPower)} ☕`);
+            state.cps = base * state.prestigeMulti * relicMulti;
+            return state.cps;
         }
 
-        function createFloatText(x, y, txt) {
-            let el = document.createElement('div');
-            el.className = 'float-text';
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            el.innerText = txt;
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 800);
-        }
-
-        function renderShop() {
-            const list = document.getElementById('shop-list');
-            if (document.getElementById('tab-shop').style.display === 'none') return;
-
-            let html = '';
-            baseItems.forEach(item => {
-                let count = state.inventory[item.id];
-                let cost = 0;
-                // Calculate mass cost
-                for(let i=0; i<state.buyQty; i++) {
-                    cost += Math.floor(item.cost * Math.pow(1.15, count + i));
-                }
-
-                let canAfford = state.beans >= cost;
-                html += `
-                    <div class="upgrade-card ${canAfford ? '' : 'disabled'}" onclick="buy('${item.id}', ${cost})">
-                        <div class="u-info">
-                            <b>${item.name} [Lv.${count}]</b>
-                            <i>Adds ${item.cps} CPS per unit</i>
-                        </div>
-                        <div class="u-cost">☕ ${cost.toLocaleString()}</div>
-                    </div>
-                `;
-            });
-            list.innerHTML = html;
-        }
-
-        function buy(id, cost) {
-            if (state.beans >= cost) {
-                state.beans -= cost;
-                state.inventory[id] += state.buyQty;
-                playSound(440, 'square', 0.05);
-                updateHUD();
+        function getCost(item, amt) {
+            let currentOwned = state.inventory[item.id];
+            let totalCost = 0;
+            for(let i=0; i<amt; i++) {
+                totalCost += Math.floor(item.baseCost * Math.pow(1.15, currentOwned + i));
             }
+            return totalCost;
         }
 
-        function setQty(q) {
-            state.buyQty = q;
-            document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            renderShop();
+        function getMaxBuy(item) {
+            let b = state.beans;
+            let c = item.baseCost;
+            let k = state.inventory[item.id];
+            let r = 1.15;
+            // Geometric series formula for max buy:
+            // n = floor( log( (b * (r - 1) / (c * r^k)) + 1 ) / log(r) )
+            let n = Math.floor(Math.log(((b * (r - 1)) / (c * Math.pow(r, k))) + 1) / Math.log(r));
+            return Math.max(0, n);
         }
 
-        function switchTab(t) {
-            document.querySelectorAll('.content-scroll').forEach(p => p.style.display = 'none');
-            document.querySelectorAll('.tab').forEach(p => p.classList.remove('active'));
-            document.getElementById('tab-' + t).style.display = 'block';
-            event.target.classList.add('active');
-            renderShop();
-        }
-
-        function prestige() {
-            let pot = Math.max(0, (Math.floor(Math.sqrt(state.totalLifetime / 1000000) * 10) / 10));
-            if (pot < 0.1) {
-                alert("You need more lifetime beans to perform a Fresh Roast! (Reach at least 1 Million total)");
+        // --- Actions ---
+        function buyItem(id) {
+            const item = ITEMS.find(i => i.id === id);
+            let qty = state.buyQty === 'MAX' ? getMaxBuy(item) : state.buyQty;
+            
+            if (qty <= 0 && state.buyQty === 'MAX') {
+                showToast("Cannot afford any!");
                 return;
             }
-            if (confirm(`Fresh Roast will reset your current beans and upgrades, but add ${pot}x to your permanent multiplier. Proceed?`)) {
-                state.prestigeMulti += pot;
-                state.beans = 0;
-                baseItems.forEach(i => state.inventory[i.id] = 0);
-                
-                // Visual Prestige Change
-                document.body.style.background = `hsl(${Math.random()*360}, 30%, 10%)`;
-                
-                playSound(600, 'sine', 1);
-                updateHUD();
-                switchTab('shop');
+
+            const cost = getCost(item, qty);
+            if (state.beans >= cost) {
+                state.beans -= cost;
+                state.inventory[id] += qty;
+                playSynth(440 + (qty * 10), 'sine', 0.1);
+                updateUI();
+            } else {
+                showToast("Insufficient Beans!");
             }
+        }
+
+        function rollRelic() {
+            const cost = 5000;
+            if (state.beans >= cost) {
+                state.beans -= cost;
+                const rand = RELICS[Math.floor(Math.random() * RELICS.length)];
+                state.relics.push({...rand});
+                showToast(`Unlocking: ${rand.name}!`, 'success');
+                playSynth(880, 'triangle', 0.3);
+                updateUI();
+            } else {
+                showToast("Need 5,000 Beans!");
+            }
+        }
+
+        // --- UI Rendering ---
+        function updateHUD() {
+            document.getElementById('bean-count').innerText = Math.floor(state.beans).toLocaleString();
+            document.getElementById('cps-count').innerText = calculateCps().toFixed(1);
+            
+            let relicMulti = 1;
+            state.relics.forEach(r => relicMulti *= r.multi);
+            document.getElementById('multi-count').innerText = relicMulti.toFixed(1) + 'x';
+        }
+
+        function updateUI() {
+            updateHUD();
+            
+            // Shop
+            const container = document.getElementById('shop-items');
+            container.innerHTML = '';
+            ITEMS.forEach(item => {
+                let qty = state.buyQty === 'MAX' ? getMaxBuy(item) : state.buyQty;
+                if (qty === 0 && state.buyQty === 'MAX') qty = 1; // Show cost for next 1
+                
+                const cost = getCost(item, qty);
+                const canAfford = state.beans >= cost;
+                
+                const div = document.createElement('div');
+                div.className = `item-card ${state.lifetime < item.baseCost ? 'locked' : ''}`;
+                div.onclick = () => buyItem(item.id);
+                div.innerHTML = `
+                    <div class="item-info">
+                        <b>${item.name} (${state.inventory[item.id]})</b>
+                        <span>+${item.baseCps} CPS | ${item.desc}</span>
+                    </div>
+                    <div class="item-cost" style="color: ${canAfford ? 'var(--success)' : 'var(--danger)'}">
+                        ${state.buyQty === 'MAX' ? 'MAX(' + qty + ')' : 'x' + qty}<br>
+                        ☕ ${cost.toLocaleString()}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            // Relics
+            const rList = document.getElementById('relic-list');
+            rList.innerHTML = '';
+            state.relics.forEach(r => {
+                rList.innerHTML += `<div class="relic-card"><b>${r.name}</b><br>${r.multi}x Boost</div>`;
+            });
+
+            // Stats
+            document.getElementById('stat-lifetime').innerText = Math.floor(state.lifetime).toLocaleString();
+            document.getElementById('stat-clicks').innerText = state.clicks;
+            document.getElementById('stat-prestige').innerText = state.prestigeMulti + 'x';
+        }
+
+        // --- Helper Systems ---
+        function showToast(msg, type = 'danger') {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            if (type === 'success') t.style.background = 'var(--success)';
+            t.innerText = msg;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+
+        function playSynth(freq, type, dur) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                g.gain.setValueAtTime(0.1, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + dur);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + dur);
+            } catch(e) {}
+        }
+
+        function spawnBean(e) {
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+            const b = document.createElement('div');
+            b.className = 'floating-bean';
+            b.style.left = x + 'px';
+            b.style.top = y + 'px';
+            b.innerText = '☕';
+            document.body.appendChild(b);
+            setTimeout(() => b.remove(), 1000);
+        }
+
+        // --- Main Logic ---
+        document.getElementById('cup-container').addEventListener('mousedown', (e) => {
+            state.clicks++;
+            let power = 1 + (calculateCps() * 0.05);
+            addBeans(power);
+            spawnBean(e);
+            playSynth(200 + Math.random() * 100, 'sine', 0.05);
+        });
+
+        function showTab(id) {
+            document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id + '-pane').classList.add('active');
+            event.target.classList.add('active');
+            updateUI();
+        }
+
+        function setBuyQty(q) {
+            state.buyQty = q;
+            document.querySelectorAll('.buy-qty').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateUI();
+        }
+
+        function save() { localStorage.setItem('CoffeeEmpire_v4', JSON.stringify(state)); }
+        function load() {
+            const s = localStorage.getItem('CoffeeEmpire_v4');
+            if (s) state = JSON.parse(s);
         }
 
         function hardReset() {
-            if (confirm("DELETE EVERYTHING?")) {
+            if(confirm("Erase all progress?")) {
                 localStorage.clear();
                 location.reload();
             }
         }
 
-        // --- Init ---
-        document.getElementById('cup').addEventListener('mousedown', handleCupClick);
-        init();
+        // Loop
+        load();
+        updateUI();
+        setInterval(() => {
+            addBeans(calculateCps() / 10);
+        }, 100);
+        setInterval(save, 10000);
+
     </script>
 </body>
-    </html>
+</html>
