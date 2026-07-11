@@ -1,43 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body { font-family: 'Arial', sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f9; }
-        button { padding: 15px 30px; font-size: 18px; cursor: pointer; border-radius: 10px; border: none; background-color: #4CAF50; color: white; margin: 10px; }
-        button:hover { background-color: #45a049; }
-        #money { font-size: 50px; font-weight: bold; margin: 20px; color: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a2e; color: white; text-align: center; margin: 0; padding: 20px; touch-action: manipulation; }
+        .container { max-width: 400px; margin: 0 auto; }
+        h1 { color: #4ecca3; }
+        #stats { font-size: 24px; margin: 20px 0; background: #16213e; padding: 15px; border-radius: 10px; }
+        #money { font-size: 40px; font-weight: bold; color: #4ecca3; }
+        .button-group { display: flex; flex-direction: column; gap: 10px; }
+        button { padding: 15px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #0f3460; color: white; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        button:disabled { background-color: #333; color: #666; }
+        #clickBtn { background-color: #4ecca3; color: #1a1a2e; font-weight: bold; padding: 30px; font-size: 20px; }
     </style>
 </head>
 <body>
-    <h1>My Idle Game</h1>
-    <div id="money">$0</div>
-    
-    <button onclick="clickMoney()">Click Me!</button>
-    <br>
-    <button onclick="buyUpgrade()">Hire Intern ($10)</button>
-
-    <script>
-        let money = 0;
-        let multiplier = 1;
-
-        function clickMoney() {
-            money += multiplier;
-            updateDisplay();
-        }
-
-        function buyUpgrade() {
-            if (money >= 10) {
-                money -= 10;
-                multiplier += 1;
-                updateDisplay();
-            } else {
-                alert("Need $10 to hire an intern!");
-            }
-        }
-
-        function updateDisplay() {
-            document.getElementById('money').innerText = '$' + money;
-        }
-    </script>
-</body>
-</html>
+    <div class="container">
+        <h1>Idle Tycoon</h1>
+        <div id="stats">
+            <div id="money">$0</div>
+            <div style="font-size: 14px; color: #aaa;">Income: <span id="mps
+                                                                   
