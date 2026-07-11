@@ -9,12 +9,21 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; text-align: center; user-select: none; }
         .container { max-width: 400px; margin: 0 auto; position: relative; }
 
-        /* Settings Modal */
-        #settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; box-sizing: border-box; align-items: center; justify-content: center; }
-        #settings-overlay.active { display: flex; }
-        .modal-content { background: var(--panel); padding: 25px; border-radius: 20px; text-align: left; border: 2px solid var(--accent); width: 90%; }
-        
-        /* Interactive Elements */
+        /* Settings Modal - Animated */
+        #settings-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); 
+            z-index: 1000; padding: 20px; box-sizing: border-box; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: 0.3s ease; display: flex;
+        }
+        #settings-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { 
+            background: var(--panel); padding: 25px; border-radius: 20px; text-align: left; 
+            border: 2px solid var(--accent); width: 90%; transform: translateY(50px); 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #settings-overlay.active .modal-content { transform: translateY(0); }
+
+        /* UI Elements */
         button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.1s; outline: none; }
         #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 20px; margin-bottom: 20px; box-shadow: 0 5px 0 #3db68f; }
         #clickBtn:active { transform: translateY(4px); box-shadow: none; }
@@ -41,6 +50,12 @@
         
         <button id="clickBtn" onclick="clickMoney(event)">MINE MONEY</button>
 
+        <div style="margin: 15px 0; text-align: right; color: var(--accent);">
+            <label style="font-size: 14px; cursor: pointer;">
+                <input type="checkbox" id="buyMaxToggle"> Buy Max
+            </label>
+        </div>
+
         <div id="shop">
             <button class="upgrade-btn" onclick="buyUpgrade('intern')">Intern <span id="cost-intern">$10</span></button>
             <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">$50</span></button>
@@ -49,9 +64,7 @@
         <div class="dashboard">
             <h3>Dashboard</h3>
             <p id="multiplier">Multiplier: 1.0x</p>
-            <p id="prestige-info">Next Prestige: +0.5x Multiplier</p>
             <button id="prestigeBtn" onclick="prestige()" style="background:#b91c1c; color:white; width:100%; padding:12px;">PRESTIGE (Locked)</button>
-            <div style="font-size: 11px; margin-top: 5px; color: #aaa;">Unlocks at $1,000,000</div>
         </div>
     </div>
 
@@ -101,13 +114,24 @@
         }
 
         function buyUpgrade(type) {
-            if (money >= costs[type]) {
-                money -= costs[type];
-                if (type === 'intern') perClick++;
-                if (type === 'auto') perSecond++;
-                costs[type] = Math.floor(costs[type] * 1.15);
-                updateDisplay();
+            let isBuyMax = document.getElementById('buyMaxToggle').checked;
+            
+            if (isBuyMax) {
+                while (money >= costs[type]) {
+                    money -= costs[type];
+                    if (type === 'intern') perClick++;
+                    if (type === 'auto') perSecond++;
+                    costs[type] = Math.floor(costs[type] * 1.15);
+                }
+            } else {
+                if (money >= costs[type]) {
+                    money -= costs[type];
+                    if (type === 'intern') perClick++;
+                    if (type === 'auto') perSecond++;
+                    costs[type] = Math.floor(costs[type] * 1.15);
+                }
             }
+            updateDisplay();
         }
 
         function updateDisplay() {
