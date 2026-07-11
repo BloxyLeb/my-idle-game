@@ -3,42 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Idle Tycoon</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a2e; color: white; text-align: center; margin: 0; padding: 20px; touch-action: manipulation; overflow-x: hidden; }
-        .container { max-width: 400px; margin: 0 auto; position: relative; }
-        h1 { color: #4ecca3; margin-bottom: 10px; }
-        #stats { font-size: 20px; margin: 15px 0; background: #16213e; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        #money { font-size: 40px; font-weight: bold; color: #4ecca3; text-shadow: 0 0 10px #4ecca3; }
-        #mps { color: #aaa; font-size: 14px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a2e; color: white; text-align: center; margin: 0; padding: 20px; touch-action: manipulation; }
+        .container { max-width: 400px; margin: 0 auto; }
+        h1 { color: #4ecca3; }
+        #stats { font-size: 20px; margin: 15px 0; background: #16213e; padding: 15px; border-radius: 10px; }
+        #money { font-size: 40px; font-weight: bold; color: #4ecca3; }
         
-        .button-group { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
-        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #0f3460; color: white; transition: background-color 0.2s, transform 0.1s; }
-        button:active { transform: scale(0.95); }
-        button:disabled { background-color: #333; color: #666; opacity: 0.6; cursor: not-allowed; }
+        .button-group { display: flex; flex-direction: column; gap: 10px; }
+        /* Upgrade Button Styles */
+        .upgrade-btn { position: relative; overflow: hidden; padding: 15px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #0f3460; color: white; transition: 0.2s; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 5px; background-color: #4ecca3; width: 0%; transition: width 0.3s; }
         
-        #clickBtn { background-color: #4ecca3; color: #1a1a2e; font-weight: bold; padding: 25px; font-size: 20px; }
-        #clickBtn:active { transform: scale(0.90); }
-
-        /* Prestige Button (Hidden by default) */
-        #prestigeBtn { background-color: #b91c1c; color: white; font-weight: bold; margin-top: 30px; display: none; }
+        #clickBtn { background-color: #4ecca3; color: #1a1a2e; font-weight: bold; padding: 30px; font-size: 20px; border: none; border-radius: 8px; width: 100%; }
         
-        /* Floating Text Animation */
-        .floating-text {
-            position: absolute;
-            font-weight: bold;
-            color: #fbbf24; /* Gold */
-            font-size: 20px;
-            pointer-events: none;
-            animation: fadeUp 1s ease-out forwards;
-            z-index: 100;
-            text-shadow: 0 0 5px #000;
-        }
-
-        @keyframes fadeUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
-        }
+        #achievements { margin-top: 20px; font-size: 14px; color: #aaa; background: #16213e; padding: 10px; border-radius: 8px; }
+        #prestigeBtn { background-color: #b91c1c; color: white; font-weight: bold; padding: 15px; margin-top: 20px; width: 100%; border: none; border-radius: 8px; display: none; }
     </style>
 </head>
 <body>
@@ -47,69 +27,45 @@
         <div id="stats">
             <div id="money">$0</div>
             <div id="mps">Income: 0/sec</div>
-            <div id="prestigeBonus" style="color: #4ecca3; font-size: 12px; display: none;">Prestige Bonus: +0%</div>
+            <div id="multiplier">Multiplier: 1.0x</div>
         </div>
         
+        <button id="clickBtn" onclick="clickMoney(event)">MINE MONEY</button>
+
         <div class="button-group">
-            <button id="clickBtn" onclick="clickMoney(event)">MINE MONEY</button>
-            <button id="btn-intern" onclick="buyUpgrade('intern')">Intern ($10)</button>
-            <button id="btn-auto" onclick="buyUpgrade('auto')">Auto-Miner ($50)</button>
-            <button id="btn-factory" onclick="buyUpgrade('factory')">Factory ($500)</button>
+            <button class="upgrade-btn" onclick="buyUpgrade('intern')">Intern <span id="cost-intern">($10)</span><div class="progress-bar" id="bar-intern"></div></button>
+            <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">($50)</span><div class="progress-bar" id="bar-auto"></div></button>
+            <button class="upgrade-btn" onclick="buyUpgrade('factory')">Factory <span id="cost-factory">($500)</span><div class="progress-bar" id="bar-factory"></div></button>
         </div>
 
-        <!-- Prestige Button -->
-        <button id="prestigeBtn" onclick="prestige()">PRESTIGE (Reset for +50% Income)</button>
-
-        <div style="margin-top: 20px;">
-            <button onclick="resetGame()" style="background-color: #555; font-size: 10px; padding: 5px 10px;">Reset All Progress</button>
+        <button id="prestigeBtn" onclick="prestige()">PRESTIGE (Reset for +0.5x Multiplier)</button>
+        
+        <div id="achievements">
+            <strong>Achievements:</strong> <span id="ach-list">None yet!</span>
         </div>
     </div>
 
     <script>
-        let money = 0, perClick = 1, perSecond = 0, totalEarnings = 0, prestigeMultiplier = 1;
+        let money = 0, perClick = 1, perSecond = 0, totalEarnings = 0, prestigeMultiplier = 1.0;
         let costs = { intern: 10, auto: 50, factory: 500 };
-        let baseCosts = { intern: 10, auto: 50, factory: 500 }; // Store base for reset
+        let baseCosts = { intern: 10, auto: 50, factory: 500 };
+        let achievements = [];
 
         window.onload = () => {
-            const saved = localStorage.getItem('idleGameSaveV2'); // New save version
+            const saved = localStorage.getItem('idleGameSaveV3');
             if (saved) {
                 const data = JSON.parse(saved);
                 money = data.money; perClick = data.perClick; perSecond = data.perSecond; 
                 costs = data.costs; totalEarnings = data.totalEarnings; prestigeMultiplier = data.prestigeMultiplier;
             }
             updateDisplay();
-            checkPrestigeAvailability();
         };
 
         function clickMoney(event) {
-            let incomeWithPrestige = Math.ceil(perClick * prestigeMultiplier);
-            money += incomeWithPrestige;
-            totalEarnings += incomeWithPrestige;
-            spawnFloatingText(event, incomeWithPrestige);
+            let income = Math.ceil(perClick * prestigeMultiplier);
+            money += income;
+            totalEarnings += income;
             updateDisplay();
-            saveGame();
-            checkPrestigeAvailability();
-        }
-
-        function spawnFloatingText(event, amount) {
-            // Get click position (fallback for mouse/touch)
-            let x = event.clientX || event.touches[0].clientX;
-            let y = event.clientY || event.touches[0].clientY;
-
-            // Create the element
-            let floatText = document.createElement('div');
-            floatText.className = 'floating-text';
-            floatText.innerText = `+$${amount}`;
-            floatText.style.left = (x - 20) + 'px'; // Offset slightly
-            floatText.style.top = (y - 30) + 'px';
-
-            // Add to container
-            document.querySelector('.container').appendChild(floatText);
-
-            // Remove after animation completes
-            setTimeout(() => {
-                floatText.remove();
-            }, 1000);
         }
 
         function buyUpgrade(type) {
@@ -118,70 +74,58 @@
                 if (type === 'intern') perClick += 1;
                 if (type === 'auto') perSecond += 1;
                 if (type === 'factory') perSecond += 10;
-                
-                costs[type] = Math.floor(costs[type] * 1.15); // Increase price by 15%
+                costs[type] = Math.floor(costs[type] * 1.15);
                 updateDisplay();
-                saveGame();
-                checkPrestigeAvailability();
             }
         }
 
         function updateDisplay() {
             document.getElementById('money').innerText = '$' + Math.floor(money);
             document.getElementById('mps').innerText = `Income: ${Math.floor(perSecond * prestigeMultiplier)}/sec`;
-            document.getElementById('btn-intern').innerText = `Hire Intern ($${costs.intern})`;
-            document.getElementById('btn-auto').innerText = `Auto-Miner ($${costs.auto})`;
-            document.getElementById('btn-factory').innerText = `Factory ($${costs.factory})`;
+            document.getElementById('multiplier').innerText = `Multiplier: ${prestigeMultiplier.toFixed(1)}x`;
+            document.getElementById('prestigeBtn').innerText = `PRESTIGE (Reset for +0.5x, Next: ${(prestigeMultiplier + 0.5).toFixed(1)}x)`;
 
-            if (prestigeMultiplier > 1) {
-                document.getElementById('prestigeBonus').style.display = 'block';
-                document.getElementById('prestigeBonus').innerText = `Prestige Bonus: +${Math.floor((prestigeMultiplier-1) * 100)}%`;
+            // Update Progress Bars
+            for(let type in costs) {
+                let percent = (money / costs[type]) * 100;
+                document.getElementById(`bar-${type}`).style.width = Math.min(percent, 100) + '%';
+                document.getElementById(`cost-${type}`).innerText = `($${costs[type]})`;
             }
+
+            // Prestige Unlock
+            document.getElementById('prestigeBtn').style.display = (totalEarnings >= 1000000) ? 'block' : 'none';
+
+            // Check Achievements
+            checkAchievements();
+            saveGame();
         }
 
-        function checkPrestigeAvailability() {
-            // Show prestige button if total earnings exceed $1,000,000
-            if (totalEarnings >= 1000000) {
-                document.getElementById('prestigeBtn').style.display = 'block';
-            }
+        function checkAchievements() {
+            let list = [];
+            if (totalEarnings >= 1000) list.push("Novice");
+            if (totalEarnings >= 100000) list.push("Rich");
+            if (totalEarnings >= 1000000) list.push("Tycoon");
+            document.getElementById('ach-list').innerText = list.join(', ');
         }
 
         function prestige() {
-            if(confirm("Prestige? Reset all money and upgrades, but gain a permanent +50% income multiplier!")) {
-                // Calculate new multiplier
+            if(confirm("Prestige? Reset all money/upgrades for a +0.5x permanent multiplier!")) {
                 prestigeMultiplier += 0.5;
-
-                // Reset core stats
-                money = 0;
-                perClick = 1;
-                perSecond = 0;
-                costs = JSON.parse(JSON.stringify(baseCosts)); // Deep copy of base costs
-                
-                // NOTE: We keep totalEarnings and prestigeMultiplier for the next run.
-
+                money = 0; perClick = 1; perSecond = 0;
+                costs = JSON.parse(JSON.stringify(baseCosts));
                 saveGame();
                 location.reload();
             }
         }
 
         function saveGame() {
-            localStorage.setItem('idleGameSaveV2', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
-        }
-
-        function resetGame() {
-            if(confirm("WIPE ALL DATA? INCLUDING PRESTIGE BONUS?")) {
-                localStorage.removeItem('idleGameSaveV2');
-                location.reload();
-            }
+            localStorage.setItem('idleGameSaveV3', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
         }
 
         setInterval(() => {
-            money += perSecond * prestigeMultiplier;
-            totalEarnings += perSecond * prestigeMultiplier;
+            money += (perSecond * prestigeMultiplier);
+            totalEarnings += (perSecond * prestigeMultiplier);
             updateDisplay();
-            checkPrestigeAvailability();
-            // Auto-save silently every 10 seconds
-            if(Math.random() > 0.9) saveGame();
         }, 1000);
     </script>
 </body>
