@@ -2,43 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coffee Shop Tycoon</title>
     <style>
         body {
             background-color: #f5f5dc;
             color: #4b3621;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden; /* Prevent scrolling bounce */
         }
+        
         #game-container {
             background: white;
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 300px;
+            width: 90%;
+            max-width: 350px;
         }
+
         button {
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px;
+            font-size: 16px;
             background-color: #6f4e37;
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-            margin: 5px;
+            margin: 10px 0;
             width: 100%;
+            /* This line stops the double-tap zoom behavior */
+            touch-action: manipulation; 
+            transition: transform 0.1s;
         }
-        button:hover { background-color: #4b3621; }
-        button:active { transform: scale(0.95); } /* The "Click" feel */
+        button:active { transform: scale(0.95); }
         
-        #reset-btn { background-color: #d9534f; margin-top: 20px; font-size: 12px; }
-        #reset-btn:hover { background-color: #c9302c; }
+        /* Floating text animation */
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
     </style>
 </head>
 <body>
@@ -46,74 +61,62 @@
     <div id="game-container">
         <h1>☕ Coffee Shop</h1>
         <h2 id="coffee-display">0 Cups</h2>
-        <p id="barista-display">Baristas: 0</p>
+        <div id="stats">
+            <p>Baristas: <span id="barista-count">0</span></p>
+            <p>Machines: <span id="machine-count">0</span></p>
+        </div>
         
         <button id="brew-btn">Brew Coffee</button>
-        <button id="hire-btn">Hire Barista (Cost: 15)</button>
-        
-        <button id="reset-btn" onclick="resetGame()">Reset Progress</button>
+        <button id="hire-barista">Hire Barista (Cost: 15)</button>
+        <button id="buy-machine">Buy Machine (Cost: 100)</button>
     </div>
 
     <script>
         let coffee = 0;
         let baristas = 0;
-        let baristaCost = 15;
+        let machines = 0;
+        let bCost = 15;
+        let mCost = 100;
 
-        // Load Save
-        window.onload = () => {
-            const saved = JSON.parse(localStorage.getItem('coffeeGameSave'));
-            if (saved) {
-                coffee = saved.coffee;
-                baristas = saved.baristas;
-                baristaCost = saved.baristaCost;
-                updateUI();
-            }
-        };
-
-        const coffeeDisplay = document.getElementById('coffee-display');
-        const baristaDisplay = document.getElementById('barista-display');
         const brewBtn = document.getElementById('brew-btn');
-        const hireBtn = document.getElementById('hire-btn');
+        const hireBarista = document.getElementById('hire-barista');
+        const buyMachine = document.getElementById('buy-machine');
 
-        brewBtn.addEventListener('click', () => {
+        // Click Logic
+        brewBtn.addEventListener('click', (e) => {
             coffee++;
+            spawnFloatingText(e.clientX, e.clientY);
             updateUI();
-            saveGame();
         });
 
-        hireBtn.addEventListener('click', () => {
-            if (coffee >= baristaCost) {
-                coffee -= baristaCost;
+        // Barista Logic
+        hireBarista.addEventListener('click', () => {
+            if (coffee >= bCost) {
+                coffee -= bCost;
                 baristas++;
-                baristaCost = Math.floor(baristaCost * 1.5);
-                hireBtn.innerText = `Hire Barista (Cost: ${baristaCost})`;
+                bCost = Math.floor(bCost * 1.5);
+                hireBarista.innerText = `Hire Barista (Cost: ${bCost})`;
                 updateUI();
-                saveGame();
             }
         });
 
-        function updateUI() {
-            coffeeDisplay.innerText = `${Math.floor(coffee)} Cups`;
-            baristaDisplay.innerText = `Baristas: ${baristas}`;
-        }
-
-        function saveGame() {
-            localStorage.setItem('coffeeGameSave', JSON.stringify({coffee, baristas, baristaCost}));
-        }
-
-        function resetGame() {
-            if(confirm("Delete all progress?")) {
-                localStorage.removeItem('coffeeGameSave');
-                location.reload();
-            }
-        }
-
-        setInterval(() => {
-            if (baristas > 0) {
-                coffee += (baristas * 0.5); // Adjusted to 0.5/sec for better pacing
+        // Machine Logic
+        buyMachine.addEventListener('click', () => {
+            if (coffee >= mCost) {
+                coffee -= mCost;
+                machines++;
+                mCost = Math.floor(mCost * 1.8);
+                buyMachine.innerText = `Buy Machine (Cost: ${mCost})`;
                 updateUI();
             }
-        }, 1000);
-    </script>
-</body>
-</html>
+        });
+
+        function spawnFloatingText(x, y) {
+            let div = document.createElement('div');
+            div.className = 'floating-text';
+            div.innerText = "+1";
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            document.body.appendChild(div);
+            setTimeout(()
+                
