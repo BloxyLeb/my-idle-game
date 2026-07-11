@@ -3,56 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Shop Tycoon</title>
+    <title>Coffee Tycoon</title>
     <style>
+        :root {
+            --primary: #6f4e37;
+            --secondary: #f5f5dc;
+            --accent: #d2691e;
+        }
         body {
-            background-color: #f5f5dc;
-            color: #4b3621;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #2c2420;
+            color: #f5f5dc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevent scrolling bounce */
+            touch-action: manipulation;
         }
-        
         #game-container {
-            background: white;
+            background: #4b3621;
             padding: 30px;
-            border-radius: 20px;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 350px;
+            width: 320px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 2px solid #6f4e37;
+        }
+        h1 { margin-top: 0; color: #f5f5dc; }
+        .stat { font-size: 1.2rem; margin: 10px 0; }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 12px;
+            background-color: var(--accent);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:active { transform: scale(0.95); background-color: #a04e16; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+
+        #brew-btn {
+            background-color: #8b4513;
+            font-size: 1.2rem;
+            height: 80px;
+            border-bottom: 5px solid #5a2d0c;
         }
 
-        button {
-            padding: 15px;
-            font-size: 16px;
-            background-color: #6f4e37;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin: 10px 0;
-            width: 100%;
-            /* This line stops the double-tap zoom behavior */
-            touch-action: manipulation; 
-            transition: transform 0.1s;
-        }
-        button:active { transform: scale(0.95); }
-        
-        /* Floating text animation */
         .floating-text {
             position: absolute;
+            color: #ffd700;
             font-weight: bold;
             pointer-events: none;
-            animation: floatUp 0.8s ease-out forwards;
+            animation: floatUp 1s ease-out forwards;
+            font-size: 20px;
+            z-index: 100;
         }
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-50px); }
+            100% { opacity: 0; transform: translateY(-100px); }
         }
     </style>
 </head>
@@ -60,53 +74,72 @@
 
     <div id="game-container">
         <h1>☕ Coffee Shop</h1>
-        <h2 id="coffee-display">0 Cups</h2>
-        <div id="stats">
-            <p>Baristas: <span id="barista-count">0</span></p>
-            <p>Machines: <span id="machine-count">0</span></p>
+        <div class="stat">Cups: <span id="coffee-display">0</span></div>
+        <div class="stat" style="font-size: 0.9rem;">
+            Baristas: <span id="barista-count">0</span> | Machines: <span id="machine-count">0</span>
         </div>
         
-        <button id="brew-btn">Brew Coffee</button>
+        <button id="brew-btn">BREW COFFEE</button>
+        
         <button id="hire-barista">Hire Barista (Cost: 15)</button>
         <button id="buy-machine">Buy Machine (Cost: 100)</button>
+        <button id="buy-grinder">Better Grinder (Cost: 50)</button>
     </div>
 
     <script>
         let coffee = 0;
-        let baristas = 0;
-        let machines = 0;
-        let bCost = 15;
-        let mCost = 100;
+        let baristas = 0, machines = 0, clickPower = 1;
+        let bCost = 15, mCost = 100, gCost = 50;
 
         const brewBtn = document.getElementById('brew-btn');
-        const hireBarista = document.getElementById('hire-barista');
-        const buyMachine = document.getElementById('buy-machine');
+        
+        // Helper to update button states
+        function updateUI() {
+            document.getElementById('coffee-display').innerText = Math.floor(coffee);
+            document.getElementById('barista-count').innerText = baristas;
+            document.getElementById('machine-count').innerText = machines;
+            
+            document.getElementById('hire-barista').innerText = `Hire Barista (Cost: ${bCost})`;
+            document.getElementById('buy-machine').innerText = `Buy Machine (Cost: ${mCost})`;
+            document.getElementById('buy-grinder').innerText = `Pro Grinder (Cost: ${gCost})`;
+        }
 
-        // Click Logic
-        brewBtn.addEventListener('click', (e) => {
-            coffee++;
-            spawnFloatingText(e.clientX, e.clientY);
+        // Reliable Click Handler
+        function handleBrew(e) {
+            coffee += clickPower;
+            // Get position for floating text
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            spawnFloatingText(x, y);
             updateUI();
-        });
+        }
 
-        // Barista Logic
-        hireBarista.addEventListener('click', () => {
+        brewBtn.addEventListener('click', handleBrew);
+
+        // Upgrades
+        document.getElementById('hire-barista').addEventListener('click', () => {
             if (coffee >= bCost) {
                 coffee -= bCost;
                 baristas++;
                 bCost = Math.floor(bCost * 1.5);
-                hireBarista.innerText = `Hire Barista (Cost: ${bCost})`;
                 updateUI();
             }
         });
 
-        // Machine Logic
-        buyMachine.addEventListener('click', () => {
+        document.getElementById('buy-machine').addEventListener('click', () => {
             if (coffee >= mCost) {
                 coffee -= mCost;
                 machines++;
                 mCost = Math.floor(mCost * 1.8);
-                buyMachine.innerText = `Buy Machine (Cost: ${mCost})`;
+                updateUI();
+            }
+        });
+
+        document.getElementById('buy-grinder').addEventListener('click', () => {
+            if (coffee >= gCost) {
+                coffee -= gCost;
+                clickPower += 1;
+                gCost = Math.floor(gCost * 2.5);
                 updateUI();
             }
         });
@@ -114,9 +147,30 @@
         function spawnFloatingText(x, y) {
             let div = document.createElement('div');
             div.className = 'floating-text';
-            div.innerText = "+1";
-            div.style.left = x + 'px';
-            div.style.top = y + 'px';
+            div.innerText = "+" + clickPower;
+            div.style.left = (x || 100) + 'px';
+            div.style.top = (y || 100) + 'px';
             document.body.appendChild(div);
-            setTimeout(()
-                
+            setTimeout(() => div.remove(), 1000);
+        }
+
+        // Game Loop
+        setInterval(() => {
+            coffee += (baristas * 0.5) + (machines * 5);
+            updateUI();
+        }, 1000);
+
+        // Save/Load
+        window.onload = () => {
+            let save = JSON.parse(localStorage.getItem('coffeeSave'));
+            if(save) {
+                coffee = save.coffee; baristas = save.baristas; machines = save.machines;
+                clickPower = save.clickPower || 1;
+                bCost = save.bCost; mCost = save.mCost; gCost = save.gCost;
+                updateUI();
+            }
+        };
+        setInterval(() => localStorage.setItem('coffeeSave', JSON.stringify({coffee, baristas, machines, clickPower, bCost, mCost, gCost})), 2000);
+    </script>
+</body>
+</html>
