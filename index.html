@@ -1,52 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Coffee Shop Tycoon</title>
     <style>
-        /* This is your CSS (Style) */
         body {
             background-color: #f5f5dc;
             color: #4b3621;
-            font-family: sans-serif;
-            text-align: center;
-            padding-top: 50px;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         #game-container {
             background: white;
-            padding: 20px;
-            border-radius: 15px;
-            display: inline-block;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 300px;
         }
         button {
-            padding: 15px 25px;
-            font-size: 16px;
+            padding: 15px 30px;
+            font-size: 18px;
             background-color: #6f4e37;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            margin: 5px;
+            width: 100%;
         }
         button:hover { background-color: #4b3621; }
+        button:active { transform: scale(0.95); } /* The "Click" feel */
+        
+        #reset-btn { background-color: #d9534f; margin-top: 20px; font-size: 12px; }
+        #reset-btn:hover { background-color: #c9302c; }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <h1>☕ Coffee Shop Tycoon</h1>
-        <h2 id="coffee-display">Cups: 0</h2>
+        <h1>☕ Coffee Shop</h1>
+        <h2 id="coffee-display">0 Cups</h2>
         <p id="barista-display">Baristas: 0</p>
         
         <button id="brew-btn">Brew Coffee</button>
-        <br><br>
         <button id="hire-btn">Hire Barista (Cost: 15)</button>
+        
+        <button id="reset-btn" onclick="resetGame()">Reset Progress</button>
     </div>
 
     <script>
-        /* This is your JavaScript (Logic) */
         let coffee = 0;
         let baristas = 0;
         let baristaCost = 15;
+
+        // Load Save
+        window.onload = () => {
+            const saved = JSON.parse(localStorage.getItem('coffeeGameSave'));
+            if (saved) {
+                coffee = saved.coffee;
+                baristas = saved.baristas;
+                baristaCost = saved.baristaCost;
+                updateUI();
+            }
+        };
 
         const coffeeDisplay = document.getElementById('coffee-display');
         const baristaDisplay = document.getElementById('barista-display');
@@ -56,6 +78,7 @@
         brewBtn.addEventListener('click', () => {
             coffee++;
             updateUI();
+            saveGame();
         });
 
         hireBtn.addEventListener('click', () => {
@@ -65,17 +88,29 @@
                 baristaCost = Math.floor(baristaCost * 1.5);
                 hireBtn.innerText = `Hire Barista (Cost: ${baristaCost})`;
                 updateUI();
+                saveGame();
             }
         });
 
         function updateUI() {
-            coffeeDisplay.innerText = `Cups: ${Math.floor(coffee)}`;
+            coffeeDisplay.innerText = `${Math.floor(coffee)} Cups`;
             baristaDisplay.innerText = `Baristas: ${baristas}`;
+        }
+
+        function saveGame() {
+            localStorage.setItem('coffeeGameSave', JSON.stringify({coffee, baristas, baristaCost}));
+        }
+
+        function resetGame() {
+            if(confirm("Delete all progress?")) {
+                localStorage.removeItem('coffeeGameSave');
+                location.reload();
+            }
         }
 
         setInterval(() => {
             if (baristas > 0) {
-                coffee += (baristas * 1);
+                coffee += (baristas * 0.5); // Adjusted to 0.5/sec for better pacing
                 updateUI();
             }
         }, 1000);
