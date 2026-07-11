@@ -31,8 +31,12 @@
         #prestigeBtn { width: 100%; padding: 12px; background-color: #b91c1c; color: white; margin-top: 10px; }
         #prestigeBtn:disabled { background-color: #555; opacity: 0.5; cursor: not-allowed; }
 
+        /* Animations */
         .confetti { position: absolute; width: 10px; height: 10px; background: #fbbf24; animation: fall 2s linear forwards; pointer-events: none; }
         @keyframes fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(500px) rotate(720deg); opacity: 0; } }
+        
+        .floating-text { position: absolute; font-weight: bold; color: #fbbf24; font-size: 20px; pointer-events: none; animation: fadeUp 1s ease-out forwards; z-index: 100; text-shadow: 0 0 5px #000; }
+        @keyframes fadeUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
     </style>
 </head>
 <body class="theme-basement">
@@ -77,6 +81,17 @@
             }
         }
 
+        function spawnFloatingText(event, amount) {
+            let x = event.clientX || 200, y = event.clientY || 300;
+            let float = document.createElement('div');
+            float.className = 'floating-text';
+            float.innerText = `+$${amount}`;
+            float.style.left = (x - 20) + 'px';
+            float.style.top = (y - 30) + 'px';
+            document.querySelector('.container').appendChild(float);
+            setTimeout(() => float.remove(), 1000);
+        }
+
         function updateOfficeTheme() {
             let body = document.body;
             let title = document.getElementById('office-title');
@@ -90,6 +105,7 @@
             let income = Math.ceil(perClick * prestigeMultiplier);
             money += income;
             totalEarnings += income;
+            spawnFloatingText(event, income);
             updateDisplay();
         }
 
@@ -115,7 +131,6 @@
                 document.getElementById(`bar-${type}`).style.width = Math.min(percent, 100) + '%';
             }
 
-            // Check Milestones for Confetti
             if (totalEarnings > 10000 && totalEarnings < 10100) triggerConfetti();
 
             let canPrestige = totalEarnings >= 1000000;
