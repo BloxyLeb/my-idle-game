@@ -2,169 +2,193 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Tycoon</title>
+    <title>Coffee Tycoon: Grand Opening</title>
     <style>
+        /* Modern Industrial Coffee Shop Theme */
         :root {
-            --dark-coffee: #3e2723;
-            --milk: #f5f5dc;
-            --accent: #d2691e;
+            --bg-color: #1a1a1a;
+            --panel-color: #2d2d2d;
+            --accent-gold: #ffc107;
+            --coffee-brown: #6d4c41;
+            --text-color: #ffffff;
         }
+
         body {
-            background: linear-gradient(135deg, #2c2420, #5d4037);
-            color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            touch-action: manipulation;
         }
-        #game-container {
-            background: rgba(75, 54, 33, 0.9);
-            padding: 30px;
-            border-radius: 30px;
-            text-align: center;
-            width: 320px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        h1 { margin: 0 0 10px 0; font-size: 1.8rem; letter-spacing: 1px; }
-        
-        #coffee-display { font-size: 3rem; font-weight: bold; margin: 10px 0; color: #ffeb3b; }
-        
-        #brew-btn {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: none;
-            background: radial-gradient(circle, #a1887f, #6d4c41);
-            font-size: 60px;
-            cursor: pointer;
-            margin: 20px auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: all 0.1s;
-        }
-        #brew-btn:active { transform: scale(0.9); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-        .upgrade-card {
-            background: rgba(255, 255, 255, 0.05);
+        #news-ticker {
+            width: 100%;
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            text-align: center;
+            font-family: monospace;
+            border-bottom: 2px solid #333;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 1000px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .clicker-panel, .shop-panel {
+            background: var(--panel-color);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        #coffee-button {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #8d6e63, #4e342e);
+            border: 10px solid #3e2723;
+            border-radius: 50%;
+            font-size: 80px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            transition: transform 0.1s;
+        }
+
+        #coffee-button:active {
+            transform: scale(0.95);
+        }
+
+        .upgrade-btn {
+            width: 100%;
             padding: 15px;
             margin: 10px 0;
-            border-radius: 15px;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .btn-buy {
-            background: var(--accent);
-            padding: 8px 12px;
-            border-radius: 8px;
+            background: #444;
             border: none;
+            border-radius: 8px;
             color: white;
-            font-weight: bold;
+            text-align: left;
             cursor: pointer;
+            transition: background 0.3s;
         }
 
-        .floating-text {
-            position: absolute;
-            color: #ffeb3b;
-            font-weight: bold;
-            pointer-events: none;
-            font-size: 20px;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
-            animation: float 0.8s ease-out forwards;
-        }
-        @keyframes float {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-70px); }
-        }
+        .upgrade-btn:hover { background: var(--coffee-brown); }
+
+        .stats { font-size: 1.2rem; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <h1>☕ COFFEE TYCOON</h1>
-        <div id="coffee-display">0</div>
-        
-        <button id="brew-btn">☕</button>
-        
-        <div style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">
-            Baristas: <span id="barista-count">0</span> | Machines: <span id="machine-count">0</span>
+    <div id="news-ticker">Welcome to the Coffee Empire. Brewing operations commencing...</div>
+
+    <div class="main-container">
+        <!-- Clicker Section -->
+        <div class="clicker-panel">
+            <h1 id="title">Coffee Shop</h1>
+            <div class="stats">Cups Brewed: <span id="counter">0</span></div>
+            <div class="stats">CPS: <span id="cps">0</span></div>
+            <button id="coffee-button">☕</button>
+            <button id="prestige-btn" style="background:purple; width:100%; padding:10px;">Prestige (Multiplier: 1.0x)</button>
         </div>
-        
-        <div class="upgrade-card">
-            <div><strong>Barista</strong><br><small>+0.5/sec</small></div>
-            <button class="btn-buy" id="hire-barista">Buy (15)</button>
-        </div>
-        <div class="upgrade-card">
-            <div><strong>Machine</strong><br><small>+5/sec</small></div>
-            <button class="btn-buy" id="buy-machine">Buy (100)</button>
-        </div>
-        <div class="upgrade-card">
-            <div><strong>Grinder</strong><br><small>+1 click</small></div>
-            <button class="btn-buy" id="buy-grinder">Buy (50)</button>
+
+        <!-- Shop Section -->
+        <div class="shop-panel">
+            <h2>Upgrades</h2>
+            <div id="shop-list">
+                <button class="upgrade-btn" onclick="buyUpgrade('barista')">Hire Barista (15 cups)</button>
+                <button class="upgrade-btn" onclick="buyUpgrade('machine')">Espresso Machine (100 cups)</button>
+                <button class="upgrade-btn" onclick="buyUpgrade('franchise')">Open Franchise (1000 cups)</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let coffee = 0, baristas = 0, machines = 0, clickPower = 1;
-        let bCost = 15, mCost = 100, gCost = 50;
+        // Game State Variables
+        let cups = 0;
+        let cps = 0;
+        let multiplier = 1.0;
+        
+        let inventory = {
+            barista: { count: 0, baseCost: 15, production: 0.5 },
+            machine: { count: 0, baseCost: 100, production: 5 },
+            franchise: { count: 0, baseCost: 1000, production: 50 }
+        };
 
-        function updateUI() {
-            document.getElementById('coffee-display').innerText = Math.floor(coffee);
-            document.getElementById('barista-count').innerText = baristas;
-            document.getElementById('machine-count').innerText = machines;
-            document.getElementById('hire-barista').innerText = `Buy (${bCost})`;
-            document.getElementById('buy-machine').innerText = `Buy (${mCost})`;
-            document.getElementById('buy-grinder').innerText = `Buy (${gCost})`;
+        // UI Update Function
+        function updateDisplay() {
+            document.getElementById('counter').innerText = Math.floor(cups);
+            document.getElementById('cps').innerText = cps.toFixed(1);
+            document.getElementById('prestige-btn').innerText = `Prestige (Multiplier: ${multiplier.toFixed(1)}x)`;
         }
 
-        document.getElementById('brew-btn').addEventListener('click', (e) => {
-            coffee += clickPower;
-            let div = document.createElement('div');
-            div.className = 'floating-text';
-            div.innerText = "+" + clickPower;
-            div.style.left = (e.clientX || 150) + 'px';
-            div.style.top = (e.clientY || 300) + 'px';
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 800);
-            updateUI();
+        // Logic for buying
+        function buyUpgrade(type) {
+            let item = inventory[type];
+            if (cups >= item.baseCost) {
+                cups -= item.baseCost;
+                item.count++;
+                item.baseCost = Math.floor(item.baseCost * 1.5);
+                calculateCPS();
+                updateDisplay();
+                // Refresh button text
+                document.getElementById(type + '-btn')?.innerText = `Buy ${type} (${item.baseCost})`;
+            }
+        }
+
+        // Logic for math
+        function calculateCPS() {
+            cps = (
+                (inventory.barista.count * inventory.barista.production) +
+                (inventory.machine.count * inventory.machine.production) +
+                (inventory.franchise.count * inventory.franchise.production)
+            ) * multiplier;
+        }
+
+        // Click Event
+        document.getElementById('coffee-button').addEventListener('click', () => {
+            cups += (1 * multiplier);
+            updateDisplay();
         });
 
-        document.getElementById('hire-barista').addEventListener('click', () => {
-            if (coffee >= bCost) {
-                coffee -= bCost; baristas++; bCost = Math.floor(bCost * 1.5); updateUI();
+        // Prestige System
+        document.getElementById('prestige-btn').addEventListener('click', () => {
+            if(confirm("Reset all progress for a permanent 0.5x multiplier boost?")) {
+                multiplier += 0.5;
+                cups = 0;
+                for(let key in inventory) {
+                    inventory[key].count = 0;
+                    inventory[key].baseCost = inventory[key].baseCost / 2; // Simplify cost reset
+                }
+                calculateCPS();
+                updateDisplay();
             }
         });
 
-        document.getElementById('buy-machine').addEventListener('click', () => {
-            if (coffee >= mCost) {
-                coffee -= mCost; machines++; mCost = Math.floor(mCost * 1.8); updateUI();
-            }
-        });
+        // Main Loop
+        setInterval(() => {
+            cups += (cps / 10); // Run 10 times a second for smoothness
+            updateDisplay();
+        }, 100);
 
-        document.getElementById('buy-grinder').addEventListener('click', () => {
-            if (coffee >= gCost) {
-                coffee -= gCost; clickPower += 1; gCost = Math.floor(gCost * 2.5); updateUI();
-            }
-        });
+        // News Ticker Logic
+        const headlines = ["New beans imported from Ethiopia!", "Coffee demand reaches all-time high!", "Local barista wins latte art contest!"];
+        setInterval(() => {
+            document.getElementById('news-ticker').innerText = headlines[Math.floor(Math.random() * headlines.length)];
+        }, 8000);
 
-        setInterval(() => { coffee += (baristas * 0.5) + (machines * 5); updateUI(); }, 1000);
-        
-        window.onload = () => {
-            let save = JSON.parse(localStorage.getItem('coffeeSave'));
-            if(save) {
-                coffee = save.coffee; baristas = save.baristas; machines = save.machines;
-                clickPower = save.clickPower || 1;
-                bCost = save.bCost; mCost = save.mCost; gCost = save.gCost;
-                updateUI();
-            }
-        };
-        setInterval(() => localStorage.setItem('coffeeSave', JSON.stringify({coffee, baristas, machines, clickPower, bCost, mCost, gCost})), 2000);
     </script>
 </body>
 </html>
