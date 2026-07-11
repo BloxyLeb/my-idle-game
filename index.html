@@ -12,19 +12,18 @@
         /* Settings Modal */
         #settings-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); 
-            z-index: 1000; padding: 20px; box-sizing: border-box; align-items: center; justify-content: center;
-            display: flex; opacity: 0; visibility: hidden; transition: 0.3s ease;
+            z-index: 1000; padding: 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: 0.3s ease;
         }
         #settings-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { 
             background: var(--panel); padding: 25px; border-radius: 20px; text-align: left; 
-            border: 2px solid var(--accent); width: 90%; transform: translateY(50px); 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid var(--accent); width: 90%; transform: translateY(20px); transition: 0.3s ease;
         }
         #settings-overlay.active .modal-content { transform: translateY(0); }
 
         /* Main UI */
-        .btn-main { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; margin-bottom: 20px; }
+        .btn-main { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; margin-bottom: 20px; box-shadow: 0 5px 0 #3db68f; transition: 0.1s; }
         .btn-main:active { transform: translateY(4px); box-shadow: none; }
         
         /* Upgrades */
@@ -34,9 +33,13 @@
             overflow: hidden; text-align: left; display: flex; justify-content: space-between;
             border: 1px solid #1a1a2e;
         }
+        .upgrade-card:active { transform: scale(0.99); }
         .progress-bar { position: absolute; bottom: 0; left: 0; height: 6px; background-color: var(--accent); width: 0%; transition: width 0.3s ease; }
         
-        /* Dashboard */
+        /* Floating Text */
+        .floating-text { position: fixed; pointer-events: none; font-weight: 900; font-size: 24px; z-index: 9999; text-shadow: 0 0 5px black; animation: popEffect 0.8s ease-out forwards; }
+        @keyframes popEffect { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
+        
         .dashboard { background: rgba(15, 52, 96, 0.6); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
     </style>
 </head>
@@ -44,10 +47,8 @@
     <div class="container">
         <h1>Idle Tycoon</h1>
         
-        <!-- Settings Button -->
         <div onclick="toggleSettings()" style="background:#2c3e50; color:var(--accent); padding:10px; border-radius:8px; cursor:pointer; margin-bottom:15px; font-weight:bold;">⚙️ SETTINGS</div>
         
-        <!-- Stats Display -->
         <div style="background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
             <div id="money" style="font-size: 32px; color: var(--accent);">$0</div>
             <div id="mps" style="font-size: 16px; margin-top: 5px;">Income: 0/sec</div>
@@ -55,14 +56,12 @@
         
         <div class="btn-main" onclick="clickMoney(event)">MINE MONEY</div>
 
-        <!-- Buy Max Section -->
         <div style="margin-bottom: 10px; text-align: right; color: var(--accent);">
             <label style="font-size: 14px; cursor: pointer;">
                 <input type="checkbox" id="buyMaxToggle"> Buy Max
             </label>
         </div>
 
-        <!-- Shop -->
         <div id="shop">
             <div class="upgrade-card" onclick="buyUpgrade('intern')">
                 <span>Intern</span> <span id="cost-intern">$10</span>
@@ -72,9 +71,12 @@
                 <span>Auto-Miner</span> <span id="cost-auto">$50</span>
                 <div class="progress-bar" id="bar-auto"></div>
             </div>
+            <div class="upgrade-card" onclick="buyUpgrade('factory')">
+                <span>Factory</span> <span id="cost-factory">$500</span>
+                <div class="progress-bar" id="bar-factory"></div>
+            </div>
         </div>
 
-        <!-- Dashboard -->
         <div class="dashboard">
             <h3>Dashboard</h3>
             <p id="multiplier">Multiplier: 1.0x</p>
@@ -82,7 +84,6 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settings-overlay">
         <div class="modal-content">
             <h3>Settings</h3>
@@ -93,7 +94,7 @@
 
     <script>
         let money = 0, perClick = 1, perSecond = 0, totalEarnings = 0, prestigeMultiplier = 1.0;
-        let costs = { intern: 10, auto: 50 };
+        let costs = { intern: 10, auto: 50, factory: 500 };
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function toggleSettings() { document.getElementById('settings-overlay').classList.toggle('active'); }
@@ -109,9 +110,20 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
+        function spawnFloatingText(event, amount) {
+            let float = document.createElement('div');
+            float.className = 'floating-text';
+            float.innerText = `+$${Math.floor(amount)}`;
+            float.style.left = (event.clientX || 200) + 'px';
+            float.style.top = (event.clientY || 300) + 'px';
+            document.body.appendChild(float);
+            setTimeout(() => float.remove(), 1000);
+        }
+
         function clickMoney(event) {
             let income = Math.ceil(perClick * prestigeMultiplier);
             money += income; totalEarnings += income;
+            spawnFloatingText(event, income);
             if(document.getElementById('soundToggle').checked) playClickSound();
             updateDisplay();
         }
@@ -121,17 +133,21 @@
             if (isBuyMax) {
                 while (money >= costs[type]) {
                     money -= costs[type];
-                    if (type === 'intern') perClick++;
-                    if (type === 'auto') perSecond += 1;
+                    applyUpgrade(type);
                     costs[type] = Math.floor(costs[type] * 1.15);
                 }
             } else if (money >= costs[type]) {
                 money -= costs[type];
-                if (type === 'intern') perClick++;
-                if (type === 'auto') perSecond += 1;
+                applyUpgrade(type);
                 costs[type] = Math.floor(costs[type] * 1.15);
             }
             updateDisplay();
+        }
+
+        function applyUpgrade(type) {
+            if (type === 'intern') perClick++;
+            if (type === 'auto') perSecond += 1;
+            if (type === 'factory') perSecond += 5;
         }
 
         function updateDisplay() {
@@ -161,7 +177,7 @@
         function prestige() { 
             if(totalEarnings >= 1000000 && confirm("Reset all progress for a permanent +0.5x multiplier?")) { 
                 prestigeMultiplier += 0.5;
-                money = 0; perClick = 1; perSecond = 0; totalEarnings = 0; costs = { intern: 10, auto: 50 };
+                money = 0; perClick = 1; perSecond = 0; totalEarnings = 0; costs = { intern: 10, auto: 50, factory: 500 };
                 saveGame(); location.reload(); 
             } 
         }
@@ -170,10 +186,13 @@
             const saved = JSON.parse(localStorage.getItem('tycoonSave'));
             if (saved) {
                 let secondsPassed = (Date.now() - saved.lastSaved) / 1000;
-                let offlineCash = Math.floor(secondsPassed * saved.perSecond * (saved.prestigeMultiplier || 1.0));
-                money = saved.money + offlineCash;
+                let offlineCash = Math.floor(secondsPassed * (saved.perSecond || 0) * (saved.prestigeMultiplier || 1.0));
+                money = (saved.money || 0) + offlineCash;
                 totalEarnings = (saved.totalEarnings || 0) + offlineCash;
-                perClick = saved.perClick; perSecond = saved.perSecond; costs = saved.costs; prestigeMultiplier = saved.prestigeMultiplier || 1.0;
+                perClick = saved.perClick || 1; 
+                perSecond = saved.perSecond || 0; 
+                costs = saved.costs || { intern: 10, auto: 50, factory: 500 }; 
+                prestigeMultiplier = saved.prestigeMultiplier || 1.0;
             }
             setInterval(() => { money += (perSecond * prestigeMultiplier); totalEarnings += (perSecond * prestigeMultiplier); updateDisplay(); }, 1000);
             updateDisplay();
