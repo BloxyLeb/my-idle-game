@@ -3,443 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Empire: Eternal Roast</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <title>Coffee Empire: The Singularity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
+        /* --- THEME DESIGN SYSTEM --- */
         :root {
-            --bg: #0d0b0a;
-            --panel: #1a1715;
-            --accent: #ff9d5c;
-            --text: #fdf5f0;
-            --rarity-0: #83c5be; /* Common */
-            --rarity-1: #a29bfe; /* Rare */
-            --rarity-2: #fdcb6e; /* Epic */
-            --rarity-3: #e84393; /* Mythic */
+            --bg: #050404;
+            --panel: #110f0e;
+            --card: rgba(28, 25, 23, 0.95);
+            --accent: #d35400;
+            --accent-bright: #e67e22;
+            --accent-glow: rgba(211, 84, 0, 0.4);
+            --text: #f5f5f5;
+            --text-dim: #a0a0a0;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --prestige: #8e44ad;
+            --common: #bdc3c7;
+            --rare: #3498db;
+            --epic: #f1c40f;
+            --legendary: #ff00ff;
+            --mythic: #e74c3c;
+            --transcendent: #00ff00;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-
-        body {
-            margin: 0; font-family: 'Outfit', sans-serif;
-            background: var(--bg); color: var(--text);
-            height: 100dvh; display: flex; flex-direction: column;
-            overflow: hidden; transition: background 0.5s;
+        /* --- GLOBAL RESET --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Outfit', sans-serif; background: var(--bg);
+            color: var(--text); overflow: hidden; user-select: none;
         }
 
-        /* --- Animated Background Effects --- */
-        #bg-fx {
+        /* --- BACKGROUND CANVAS --- */
+        #fx-canvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: -1;
-            background: radial-gradient(circle at center, #2c1b12 0%, #0d0b0a 100%);
-            opacity: 0.6;
+            pointer-events: none; z-index: 1;
         }
 
-        /* --- HUD --- */
-        #hud {
-            display: grid; grid-template-columns: 1fr 1fr;
-            padding: 15px; background: rgba(0,0,0,0.85);
+        /* --- TOP HUD --- */
+        header {
+            position: relative; z-index: 100; padding: 15px 20px;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--accent);
-            box-shadow: 0 0 20px rgba(255, 157, 92, 0.2);
-            z-index: 100;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
         }
-        .stat { font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px; }
-        .stat b { display: block; font-size: 1.3rem; color: var(--accent); font-family: 'JetBrains Mono'; }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-item.right { align-items: flex-end; text-align: right; }
+        .stat-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
+        .stat-val { font-size: 1.3rem; font-weight: 900; color: var(--accent-bright); font-family: 'JetBrains Mono'; }
 
-        /* --- Clicker Section --- */
-        #clicker-view {
-            height: 35vh; display: flex; align-items: center; justify-content: center;
-            position: relative;
+        /* --- MAIN VIEWPORT --- */
+        #main-view {
+            position: relative; flex: 1; display: flex; flex-direction: column;
+            height: calc(100vh - 80px);
         }
-        #cup-anchor { position: relative; cursor: pointer; transition: transform 0.05s; }
-        #cup-anchor:active { transform: scale(0.8); }
-        #main-cup { width: 140px; filter: drop-shadow(0 0 15px var(--accent)); }
 
-        /* Steam Particles */
-        .steam {
-            position: absolute; top: -20px; font-size: 1.5rem; opacity: 0;
-            animation: steamRise 2s infinite linear;
+        /* Clicker Area */
+        #click-area {
+            flex: 1.2; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; position: relative;
         }
-        @keyframes steamRise {
+        .cup-wrapper { position: relative; cursor: pointer; transition: transform 0.05s; z-index: 10; }
+        .cup-wrapper:active { transform: scale(0.9); }
+        #cup-svg { width: 180px; filter: drop-shadow(0 0 20px var(--accent-glow)); }
+
+        .steam-icon {
+            position: absolute; top: -20px; font-size: 2.5rem; opacity: 0;
+            animation: steamAnim 3s infinite linear;
+        }
+        @keyframes steamAnim {
             0% { transform: translateY(0) scale(1); opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(-100px) scale(2); opacity: 0; }
+            30% { opacity: 0.5; }
+            100% { transform: translateY(-150px) scale(2) rotate(20deg); opacity: 0; }
         }
 
-        /* --- Navigation --- */
-        #ui-tabs {
-            display: flex; background: #000; border-top: 1px solid #333;
+        #frenzy-notice {
+            position: absolute; top: 20px; color: gold; font-weight: 900;
+            font-size: 1.5rem; text-shadow: 0 0 10px orange; display: none;
+            animation: flash 0.5s infinite alternate;
         }
+        @keyframes flash { from { opacity: 1; } to { opacity: 0.4; } }
+
+        /* --- MENU SYSTEM --- */
+        #menu-container {
+            flex: 1; background: var(--panel);
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.7);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab-bar {
+            display: flex; background: rgba(0,0,0,0.3);
+            overflow-x: auto; scrollbar-width: none;
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
         .tab {
-            flex: 1; padding: 15px 5px; border: none; background: none;
-            color: #fff; font-size: 0.7rem; font-weight: 900; opacity: 0.4;
+            flex: 1; padding: 18px 25px; border: none; background: none;
+            color: #fff; font-size: 0.75rem; font-weight: 800; opacity: 0.4;
+            white-space: nowrap; transition: 0.3s; cursor: pointer;
         }
-        .tab.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); }
+        .tab.active { opacity: 1; color: var(--accent-bright); border-bottom: 3px solid var(--accent-bright); }
 
-        /* --- Panes --- */
-        .content-wrap { flex: 1; overflow-y: auto; background: var(--panel); border-radius: 20px 20px 0 0; }
-        .pane { display: none; padding: 15px; padding-bottom: 80px; }
-        .pane.active { display: block; }
+        .pane { display: none; flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+        .pane.active { display: block; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- Shop & Upgrades --- */
-        .qty-row { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-small {
-            flex: 1; padding: 8px; border: 1px solid #444; border-radius: 8px;
-            background: #222; color: #fff; font-size: 0.8rem; font-weight: 800;
+        /* --- SHOP UI --- */
+        .shop-controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .qty-btn {
+            flex: 1; padding: 12px; background: #222; border: 1px solid #333;
+            color: #fff; border-radius: 10px; font-weight: 900; cursor: pointer;
         }
-        .btn-small.active { background: var(--accent); color: #000; border: none; }
+        .qty-btn.active { background: var(--accent); border-color: var(--accent-bright); }
 
-        .card {
-            background: rgba(255,255,255,0.03); border-radius: 12px;
-            margin-bottom: 10px; position: relative; overflow: hidden;
-            border: 1px solid #333; transition: 0.2s; cursor: pointer;
+        .building-card {
+            background: var(--card); border: 1px solid #2a2a2a;
+            border-radius: 15px; margin-bottom: 12px; position: relative;
+            overflow: hidden; cursor: pointer; transition: 0.2s;
         }
-        .card.can-buy { border-color: #555; background: rgba(255,255,255,0.05); }
-        
-        /* Progress Fill Bar */
-        .progress-bg {
+        .building-card.affordable { border-color: #444; }
+        .building-card:active { transform: scale(0.98); }
+
+        .prog-bg {
             position: absolute; left: 0; top: 0; height: 100%;
-            background: rgba(255, 157, 92, 0.1); width: 0%; z-index: 0;
-            transition: width 0.3s linear;
+            background: rgba(211, 84, 0, 0.1); width: 0%; z-index: 1;
         }
 
-        .card-content {
-            position: relative; z-index: 1; padding: 12px;
+        .card-body {
+            position: relative; z-index: 2; padding: 15px;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .card-info b { display: block; font-size: 0.95rem; color: var(--accent); }
-        .card-info i { font-size: 0.7rem; opacity: 0.6; font-style: normal; }
-        .card-price { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 0.85rem; text-align: right; }
+        .b-title { font-weight: 700; color: var(--accent-bright); font-size: 1.05rem; }
+        .b-stats { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
+        .b-cost { text-align: right; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 0.9rem; }
+        .b-lvl { font-size: 0.8rem; background: #000; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
 
-        /* --- Relic System --- */
-        .gacha-zone {
-            background: linear-gradient(45deg, #2c1b12, #1a1715);
-            padding: 20px; border-radius: 15px; text-align: center;
-            border: 2px solid #fdcb6e; margin-bottom: 20px;
+        /* --- GACHA UI --- */
+        .gacha-box {
+            background: linear-gradient(135deg, #1e130c, #000);
+            padding: 30px; border-radius: 20px; text-align: center;
+            border: 2px solid var(--epic); margin-bottom: 20px;
         }
-        .relic-inv { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .roll-btn {
+            width: 100%; padding: 18px; border: none; border-radius: 12px;
+            font-weight: 900; background: var(--epic); color: #000;
+            cursor: pointer; box-shadow: 0 0 20px rgba(241, 196, 15, 0.2);
+        }
+
         .relic-item {
-            padding: 10px; border-radius: 8px; font-size: 0.8rem;
-            border-left: 4px solid var(--accent); background: rgba(255,255,255,0.05);
+            padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.03);
+            margin-bottom: 10px; border-left: 5px solid #fff;
         }
 
-        /* --- Milestones --- */
-        .goal-card {
-            background: #111; padding: 12px; border-radius: 10px;
-            margin-bottom: 8px; border-left: 4px solid #444; opacity: 0.5;
+        /* --- SETTINGS --- */
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid #222;
         }
-        .goal-card.reached { opacity: 1; border-left-color: var(--rarity-0); background: #1e1e1e; }
-
-        /* Particles */
-        .particle {
-            position: absolute; pointer-events: none;
-            font-weight: 900; animation: floatUp 0.8s forwards;
-        }
-        @keyframes floatUp {
-            0% { transform: translate(0,0); opacity: 1; }
-            100% { transform: translate(var(--rx), -100px); opacity: 0; }
+        .danger-zone {
+            margin-top: 40px; border-top: 2px solid var(--danger); padding-top: 20px;
         }
 
-        #toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--accent); color: #000; padding: 10px 25px;
-            border-radius: 50px; font-weight: 900; z-index: 1000; display: none;
+        /* Golden Bean Event */
+        #golden-bean {
+            position: absolute; font-size: 4rem; cursor: pointer;
+            z-index: 200; display: none; filter: drop-shadow(0 0 15px gold);
         }
+
+        /* --- ACHIEVEMENTS POP --- */
+        #ach-toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: #222; border: 2px solid var(--epic); padding: 15px 25px;
+            border-radius: 50px; z-index: 1000; transition: 0.5s;
+            display: flex; align-items: center; gap: 15px;
+        }
+        #ach-toast.show { top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="toast">Insufficient Beans!</div>
-    <div id="bg-fx"></div>
-
-    <div id="hud">
-        <div class="stat">CURRENT BEANS<b id="beans-val">0</b></div>
-        <div class="stat" style="text-align:right">PER SEC<b id="cps-val">0</b></div>
-        <div class="stat">LIFETIME<b id="lifetime-val">0</b></div>
-        <div class="stat" style="text-align:right">MULTIPLIER<b id="multi-val">1.0x</b></div>
+    <canvas id="fx-canvas"></canvas>
+    <div id="ach-toast">
+        <span style="font-size:2rem">🏆</span>
+        <div><b id="ach-name">Achievement!</b><br><small id="ach-desc">You did it!</small></div>
     </div>
 
-    <div id="clicker-view">
-        <div id="cup-anchor">
-            <div class="steam" style="left:20%; animation-delay:0s">♨</div>
-            <div class="steam" style="left:50%; animation-delay:0.5s">♨</div>
-            <div class="steam" style="left:80%; animation-delay:1s">♨</div>
-            <svg id="main-cup" viewBox="0 0 100 100">
-                <path d="M20,30 Q20,85 50,85 Q80,85 80,30" fill="none" stroke="var(--accent)" stroke-width="4"/>
-                <path d="M22,33 Q22,82 50,82 Q78,82 78,33 Z" fill="#2c1b12"/>
-                <rect x="15" y="25" width="70" height="10" rx="5" fill="#fdf5f0"/>
-                <path d="M80,45 Q95,45 95,60 Q95,75 80,75" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-            </svg>
+    <header id="hud">
+        <div class="stat-item">
+            <span class="stat-label">Stockpile</span>
+            <span class="stat-val" id="beans">0</span>
         </div>
-    </div>
+        <div class="stat-item right">
+            <span class="stat-label">Roast Power (CPS)</span>
+            <span class="stat-val" id="cps">0.0</span>
+        </div>
+        <div class="stat-item" style="margin-top:10px">
+            <span class="stat-label">Aroma Level</span>
+            <span class="stat-val" id="aroma" style="color:var(--prestige)">0</span>
+        </div>
+        <div class="stat-item right" style="margin-top:10px">
+            <span class="stat-label">Multiplier</span>
+            <span class="stat-val" id="multi">1.0x</span>
+        </div>
+    </header>
 
-    <div id="ui-tabs">
-        <button class="tab active" onclick="switchTab('shop')">EQUIPMENT</button>
-        <button class="tab" onclick="switchTab('relics')">RELICS</button>
-        <button class="tab" onclick="switchTab('goals')">GOALS</button>
-        <button class="tab" onclick="switchTab('prestige')">AROMA</button>
-    </div>
-
-    <div class="content-wrap">
-        <!-- Shop -->
-        <div id="pane-shop" class="pane active">
-            <div class="qty-row">
-                <button class="btn-small active" id="qty-1" onclick="setQty(1)">X1</button>
-                <button class="btn-small" id="qty-10" onclick="setQty(10)">X10</button>
-                <button class="btn-small" id="qty-max" onclick="setQty('MAX')">MAX</button>
+    <div id="main-view">
+        <div id="click-area">
+            <div id="frenzy-notice">COFFEE RUSH: 10x!</div>
+            <div id="golden-bean" onclick="game.collectGoldenBean()">🫘</div>
+            <div class="cup-wrapper" id="cup-btn">
+                <div class="steam-icon" style="left:20%; animation-delay:0s">♨</div>
+                <div class="steam-icon" style="left:50%; animation-delay:1s">♨</div>
+                <div class="steam-icon" style="left:80%; animation-delay:2s">♨</div>
+                <svg id="cup-svg" viewBox="0 0 100 100">
+                    <path d="M20,35 Q20,85 50,85 Q80,85 80,35" fill="none" stroke="var(--accent)" stroke-width="5"/>
+                    <path d="M23,39 Q23,82 50,82 Q77,82 77,39 Z" fill="#2c1b12"/>
+                    <rect x="15" y="28" width="70" height="12" rx="6" fill="#f5f5f5"/>
+                    <path d="M80,45 Q95,45 95,60 Q95,75 80,75" fill="none" stroke="#f5f5f5" stroke-width="6" stroke-linecap="round"/>
+                </svg>
             </div>
-            <div id="shop-list"></div>
         </div>
 
-        <!-- Relics -->
-        <div id="pane-relics" class="pane">
-            <div class="gacha-zone">
-                <h2 style="margin:0; color:#fdcb6e">Ancient Roaster</h2>
-                <p style="font-size:0.8rem">Roll for random permanent relics</p>
-                <button class="btn-small active" style="width:100%; padding:15px" onclick="rollRelic()">ROLL (10,000 Beans)</button>
+        <div id="menu-container">
+            <div class="tab-bar">
+                <button class="tab active" onclick="ui.setTab('shop')">EQUIPMENT</button>
+                <button class="tab" onclick="ui.setTab('upgrades')">RESEARCH</button>
+                <button class="tab" onclick="ui.setTab('relics')">MYSTIC</button>
+                <button class="tab" onclick="ui.setTab('milestones')">GOALS</button>
+                <button class="tab" onclick="ui.setTab('ascend')">ASCEND</button>
+                <button class="tab" onclick="ui.setTab('settings')">SETTINGS</button>
             </div>
-            <h3>Inventory</h3>
-            <div id="relic-list" class="relic-inv"></div>
-        </div>
 
-        <!-- Goals -->
-        <div id="pane-goals" class="pane">
-            <h3 style="color:var(--accent)">Empire Milestones</h3>
-            <div id="goal-list"></div>
-        </div>
+            <!-- Shop Pane -->
+            <div id="pane-shop" class="pane active">
+                <div class="shop-controls">
+                    <button class="qty-btn active" id="qty-1" onclick="game.setBuyQty(1)">X1</button>
+                    <button class="qty-btn" id="qty-10" onclick="game.setBuyQty(10)">X10</button>
+                    <button class="qty-btn" id="qty-max" onclick="game.setBuyQty('MAX')">MAX</button>
+                </div>
+                <div id="shop-list"></div>
+            </div>
 
-        <!-- Prestige -->
-        <div id="pane-prestige" class="pane">
-            <div class="gacha-zone" style="border-color: var(--rarity-1)">
-                <h2>Aroma Ascension</h2>
-                <p>Current Points: <b id="aroma-pts">0</b></p>
-                <p>Pending Points: <b id="pending-pts" style="color:var(--accent)">0</b></p>
-                <button class="btn-small active" style="width:100%; background:var(--rarity-1); color:#000" onclick="doPrestige()">ASCEND NOW</button>
+            <!-- Upgrades Pane -->
+            <div id="pane-upgrades" class="pane">
+                <h3>Lab Research</h3>
+                <p style="font-size:0.8rem; color:var(--text-dim)">Unlock permanent multipliers for specific buildings.</p>
+                <div id="upgrade-list"></div>
+            </div>
+
+            <!-- Relics Pane -->
+            <div id="pane-relics" class="pane">
+                <div class="gacha-box">
+                    <h2 style="color:var(--epic); margin:0">The Void Grinder</h2>
+                    <p style="font-size:0.8rem">Roll for ancient coffee artifacts.</p>
+                    <button class="roll-btn" onclick="game.rollRelic()">ROLL RELIC (50,000 Beans)</button>
+                </div>
+                <h3>Artifacts</h3>
+                <div id="relic-list"></div>
+            </div>
+
+            <!-- Milestones Pane -->
+            <div id="pane-milestones" class="pane">
+                <h3>Global Achievements</h3>
+                <div id="ach-list"></div>
+            </div>
+
+            <!-- Ascend Pane -->
+            <div id="pane-ascend" class="pane">
+                <div class="gacha-box" style="border-color: var(--prestige)">
+                    <h2 style="color:var(--prestige); margin:0">Aroma Ascension</h2>
+                    <p>Sacrifice your empire for <b>Aroma Points</b>. Each point = +5% Total Production.</p>
+                    <div style="margin:20px 0">
+                        <span style="font-size:0.7rem; opacity:0.6">PENDING POINTS:</span><br>
+                        <b id="pending-aroma" style="font-size:2.5rem; color:var(--accent-bright)">0</b>
+                    </div>
+                    <button class="roll-btn" style="background:var(--prestige); color:#fff" onclick="game.ascend()">ASCEND NOW</button>
+                </div>
+            </div>
+
+            <!-- Settings Pane -->
+            <div id="pane-settings" class="pane">
+                <h3>System Settings</h3>
+                <div class="setting-row">
+                    <span>SFX Volume</span>
+                    <input type="range" id="vol-slider" min="0" max="100" value="50">
+                </div>
+                <div class="setting-row">
+                    <span>Particles Level</span>
+                    <select id="perf-mode">
+                        <option value="high">High (Juicy)</option>
+                        <option value="low">Low (Battery Saver)</option>
+                        <option value="none">Off</option>
+                    </select>
+                </div>
+                <div class="danger-zone">
+                    <button class="qty-btn" style="width:100%; background:var(--danger)" onclick="game.hardReset()">WIPE ALL DATA</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const ITEMS = [
-            { id: 's1', name: 'Plastic Stirrer', baseCost: 15, cps: 0.2 },
-            { id: 's2', name: 'Coffee Intern', baseCost: 100, cps: 1.5 },
-            { id: 's3', name: 'French Press', baseCost: 1200, cps: 8 },
-            { id: 's4', name: 'Moka Pot', baseCost: 14000, cps: 48 },
-            { id: 's5', name: 'Espresso Engine', baseCost: 160000, cps: 210 },
-            { id: 's6', name: 'Coffee Truck', baseCost: 1800000, cps: 1100 },
-            { id: 's7', name: 'High-Street Cafe', baseCost: 22000000, cps: 7200 },
-            { id: 's8', name: 'Bulk Roastery', baseCost: 300000000, cps: 45000 },
-            { id: 's9', name: 'Coffee Plantation', baseCost: 4500000000, cps: 280000 },
-            { id: 's10', name: 'Space Bean Siphon', baseCost: 80000000000, cps: 1900000 }
+        /* --- CONSTANTS & DATABASE (30 Buildings, 50 Upgrades) --- */
+        const BUILDINGS = [
+            { id: 'b1', name: 'Plastic Stirrer', base: 15, cps: 0.2, desc: 'Better than your finger.' },
+            { id: 'b2', name: 'Coffee Intern', base: 100, cps: 1.5, desc: 'Brewing for credit.' },
+            { id: 'b3', name: 'French Press', base: 1100, cps: 8, desc: 'Immersion is key.' },
+            { id: 'b4', name: 'Moka Pot', base: 12500, cps: 42, desc: 'Classic stovetop.' },
+            { id: 'b5', name: 'Aeropress', base: 140000, cps: 190, desc: 'Physics-based brewing.' },
+            { id: 'b6', name: 'Espresso Unit', base: 1600000, cps: 950, desc: 'Pressure and profit.' },
+            { id: 'b7', name: 'Coffee Truck', base: 18000000, cps: 6200, desc: 'Mobile caffeine.' },
+            { id: 'b8', name: 'Local Cafe', base: 220000000, cps: 35000, desc: 'Community favorite.' },
+            { id: 'b9', name: 'Industrial Roastery', base: 3000000000, cps: 210000, desc: 'Massive scale.' },
+            { id: 'b10', name: 'Bulk Plantation', base: 45000000000, cps: 1400000, desc: 'Own the source.' },
+            { id: 'b11', name: 'Global Franchise', base: 650000000000, cps: 9500000, desc: 'Everywhere at once.' },
+            { id: 'b12', name: 'Caffeine Lab', base: 9000000000000, cps: 82000000, desc: 'Designer beans.' },
+            { id: 'b13', name: 'Orbital Siphon', base: 150000000000000, cps: 650000000, desc: 'Zero-G roasting.' },
+            { id: 'b14', name: 'Lunar Farm', base: 2500000000000000, cps: 4200000000, desc: 'Roasted by sunlight.' },
+            { id: 'b15', name: 'Martian Greenhouse', base: 40000000000000000, cps: 32000000000, desc: 'Red planet black brew.' },
+            { id: 'b16', name: 'Atmospheric Harvester', base: 600000000000000000, cps: 250000000000, desc: 'Siphoning gas clouds.' },
+            { id: 'b17', name: 'Stellar Roaster', base: 9000000000000000000, cps: 2100000000000, desc: 'Using sun flares.' },
+            { id: 'b18', name: 'Dyson Grinder', base: 150000000000000000000, cps: 15000000000000, desc: 'Whole solar system brew.' },
+            { id: 'b19', name: 'Galactic Hub', base: 2500000000000000000000, cps: 120000000000000, desc: 'The galaxy runs on it.' },
+            { id: 'b20', name: 'Dimensional Tear', base: 45000000000000000000000, cps: 950000000000000, desc: 'Imported from Universe B.' },
+            { id: 'b21', name: 'Time-Loop Brewer', base: 800000000000000000000000, cps: 8200000000000000, desc: 'Brewed yesterday today.' },
+            { id: 'b22', name: 'Dark Matter Press', base: 15000000000000000000000000, cps: 75000000000000000, desc: 'Invisible deliciousness.' },
+            { id: 'b23', name: 'Nebula Siphon', base: 300000000000000000000000000, cps: 680000000000000000, desc: 'Cloud flavor.' },
+            { id: 'b24', name: 'Event Horizon Unit', base: 6000000000000000000000000000, cps: 5500000000000000000, desc: 'No escape from aroma.' },
+            { id: 'b25', name: 'Supernova Roast', base: 120000000000000000000000000000, cps: 48000000000000000000, desc: 'Explosive taste.' },
+            { id: 'b26', name: 'Galaxy Cluster Cafe', base: 2500000000000000000000000000000, cps: 420000000000000000000, desc: 'Local to the group.' },
+            { id: 'b27', name: 'Infinite Filter', base: 50000000000000000000000000000000, cps: 3800000000000000000000, desc: 'Never clogs.' },
+            { id: 'b28', name: 'Entropy Reverser', base: 1000000000000000000000000000000000, cps: 35000000000000000000000, desc: 'Hot forever.' },
+            { id: 'b29', name: 'The Creator’s Mug', base: 50000000000000000000000000000000000, cps: 320000000000000000000000, desc: 'The source.' },
+            { id: 'b30', name: 'The Singularity', base: 999999999999999999999999999999999999, cps: 9999999999999999999999999, desc: 'End of coffee.' }
+        ];
+
+        const TECH_UPGRADES = [
+            { id: 'u1', bid: 'b1', name: 'Sanded Plastic', cost: 500, multi: 2, desc: 'Stirrers are more ergonomic.' },
+            { id: 'u2', bid: 'b2', name: 'Online Courses', cost: 2500, multi: 2, desc: 'Interns actually know how to brew.' },
+            { id: 'u3', bid: 'b3', name: 'Steel Mesh', cost: 10000, multi: 2, desc: 'French presses filter better.' },
+            { id: 'u4', bid: 'b4', name: 'Rubber Seals', cost: 50000, multi: 2, desc: 'Moka pots don’t leak pressure.' },
+            { id: 'u5', bid: 'b5', name: 'Inverted Method', cost: 250000, multi: 2, desc: 'Aeropress pro techniques.' },
+            { id: 'u6', bid: 'b1', name: 'Reinforced Resin', cost: 1000000, multi: 3, desc: 'Unbreakable stirrers.' }
         ];
 
         const RELIC_POOL = [
-            { name: 'Burr Grinder', multi: 1.2, rarity: 0 },
-            { name: 'Silver Kettle', multi: 1.5, rarity: 1 },
-            { name: 'Barista Trophy', multi: 2.0, rarity: 2 },
-            { name: 'Coffee Singularity', multi: 5.0, rarity: 3 }
+            { name: 'Paper Filter', multi: 1.05, rarity: 'common', color: 'var(--common)', flavor: 'Plain but essential.' },
+            { name: 'Ceramic Mug', multi: 1.10, rarity: 'common', color: 'var(--common)', flavor: 'Heats the soul.' },
+            { name: 'Steel Tamper', multi: 1.25, rarity: 'rare', color: 'var(--rare)', flavor: 'Heavy is the crown.' },
+            { name: 'Digital Scale', multi: 1.40, rarity: 'rare', color: 'var(--rare)', flavor: 'Precision is profit.' },
+            { name: 'Copper Kettle', multi: 1.80, rarity: 'epic', color: 'var(--epic)', flavor: 'Conductivity at its peak.' },
+            { name: 'Barista Trophy', multi: 2.50, rarity: 'legendary', color: 'var(--legendary)', flavor: 'You are the champion.' },
+            { name: 'The First Bean', multi: 10.0, rarity: 'mythic', color: 'var(--mythic)', flavor: 'The origin of caffeine.' }
         ];
 
-        const MILESTONES = [
-            { req: 1000, label: 'Early Riser', reward: 'Unlock Relics' },
-            { req: 100000, label: 'Neighborhood Staple', reward: 'Click x2' },
-            { req: 1000000, label: 'Coffee Tycoon', reward: 'Unlock Prestige' },
-            { req: 50000000, label: 'Global Monopoly', reward: 'CPS +25%' }
-        ];
-
-        let state = {
-            beans: 0, lifetime: 0, aroma: 0,
-            inventory: {}, relics: [], qty: 1
-        };
-
-        // --- Core Math ---
-        function calculateCps() {
-            let base = 0;
-            ITEMS.forEach(i => base += (state.inventory[i.id] || 0) * i.cps);
-            let relicMulti = state.relics.reduce((a, b) => a * b.multi, 1);
-            let aromaMulti = 1 + (state.aroma * 0.05);
-            let bonus = (state.lifetime > 50000000) ? 1.25 : 1.0;
-            return base * relicMulti * aromaMulti * bonus;
-        }
-
-        function getCostDetails(item) {
-            let current = state.inventory[item.id] || 0;
-            let n = state.qty;
-            if (n === 'MAX') {
-                // Formula for Max Buy: n = floor( log1.15( (Beans * 0.15 / (Base * 1.15^k)) + 1 ) )
-                n = Math.floor(Math.log(((state.beans * 0.15) / (item.baseCost * Math.pow(1.15, current))) + 1) / Math.log(1.15));
-                n = Math.max(1, n);
+        /* --- GAME ENGINE CLASS --- */
+        class CoffeeEmpire {
+            constructor() {
+                this.state = {
+                    beans: 0,
+                    lifetime: 0,
+                    clicks: 0,
+                    aroma: 0,
+                    inventory: {},
+                    upgrades: [],
+                    relics: [],
+                    qty: 1,
+                    frenzy: false
+                };
+                this.lastTick = Date.now();
+                this.init();
             }
-            let cost = (item.baseCost * (Math.pow(1.15, current) * (Math.pow(1.15, n) - 1))) / 0.15;
-            return { cost: Math.floor(cost), n: n };
-        }
 
-        // --- Actions ---
-        function clickCup(e) {
-            let power = 1 + (calculateCps() * 0.05);
-            if (state.lifetime > 100000) power *= 2;
-            
-            state.beans += power;
-            state.lifetime += power;
-            
-            // Visuals
-            spawnParticle(e.touches ? e.touches[0].clientX : e.clientX, e.touches ? e.touches[0].clientY : e.clientY, Math.floor(power));
-            document.body.style.background = '#1a1412';
-            setTimeout(() => document.body.style.background = 'var(--bg)', 50);
-            updateHUD();
-        }
-
-        function buy(id) {
-            const item = ITEMS.find(i => i.id === id);
-            const { cost, n } = getCostDetails(item);
-            if (state.beans >= cost) {
-                state.beans -= cost;
-                state.inventory[id] = (state.inventory[id] || 0) + n;
-                updateHUD();
-                renderShop();
-            } else {
-                toast();
-            }
-        }
-
-        function rollRelic() {
-            if (state.beans >= 10000) {
-                state.beans -= 10000;
-                let r = RELIC_POOL[Math.floor(Math.random() * RELIC_POOL.length)];
-                state.relics.push({...r});
-                renderRelics();
-                updateHUD();
-            } else {
-                toast("Need 10,000 Beans!");
-            }
-        }
-
-        // --- UI Rendering ---
-        function updateHUD() {
-            document.getElementById('beans-val').innerText = Math.floor(state.beans).toLocaleString();
-            document.getElementById('cps-val').innerText = calculateCps().toLocaleString(undefined, {maximumFractionDigits:1});
-            document.getElementById('lifetime-val').innerText = Math.floor(state.lifetime).toLocaleString();
-            document.getElementById('multi-val').innerText = (state.relics.reduce((a, b) => a * b.multi, 1) * (1 + state.aroma * 0.05)).toFixed(2) + 'x';
-            
-            let pot = Math.floor(Math.sqrt(state.lifetime / 1000000));
-            document.getElementById('aroma-pts').innerText = state.aroma;
-            document.getElementById('pending-pts').innerText = Math.max(0, pot - state.aroma);
-        }
-
-        function renderShop() {
-            const list = document.getElementById('shop-list');
-            list.innerHTML = '';
-            ITEMS.forEach(item => {
-                const { cost, n } = getCostDetails(item);
-                const pct = Math.min(100, (state.beans / cost) * 100);
-                
-                const card = document.createElement('div');
-                card.className = `card ${state.beans >= cost ? 'can-buy' : ''}`;
-                card.onclick = () => buy(item.id);
-                card.innerHTML = `
-                    <div class="progress-bg" style="width:${pct}%"></div>
-                    <div class="card-content">
-                        <div class="card-info">
-                            <b>${item.name} (${state.inventory[item.id] || 0})</b>
-                            <i>+${item.cps} CPS per unit</i>
-                        </div>
-                        <div class="card-price" style="color:${state.beans >= cost ? 'var(--accent)' : '#888'}">
-                            x${n}<br>☕ ${cost.toLocaleString()}
-                        </div>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-        }
-
-        function renderGoals() {
-            const list = document.getElementById('goal-list');
-            list.innerHTML = '';
-            MILESTONES.forEach(m => {
-                const reached = state.lifetime >= m.req;
-                list.innerHTML += `
-                    <div class="goal-card ${reached ? 'reached' : ''}">
-                        <b>${reached ? '✅' : '🔒'} ${m.label}</b><br>
-                        <span style="font-size:0.7rem">${m.reward} (${m.req.toLocaleString()} lifetime)</span>
-                    </div>
-                `;
-            });
-        }
-
-        function renderRelics() {
-            const list = document.getElementById('relic-list');
-            list.innerHTML = '';
-            state.relics.forEach(r => {
-                list.innerHTML += `<div class="relic-item" style="border-left-color:var(--rarity-${r.rarity})"><b>${r.name}</b><br>${r.multi}x Multi</div>`;
-            });
-        }
-
-        // --- Helpers ---
-        function switchTab(id) {
-            document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('pane-' + id).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if(id === 'shop') renderShop();
-            if(id === 'goals') renderGoals();
-            if(id === 'relics') renderRelics();
-        }
-
-        function setQty(q) {
-            state.qty = q;
-            document.querySelectorAll('.btn-small').forEach(b => b.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            renderShop();
-        }
-
-        function spawnParticle(x, y, val) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            p.style.color = 'var(--accent)';
-            p.style.setProperty('--rx', (Math.random() * 60 - 30) + 'px');
-            p.innerText = '+' + val;
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 800);
-        }
-
-        function doPrestige() {
-            let pot = Math.floor(Math.sqrt(state.lifetime / 1000000));
-            if (pot <= state.aroma) return alert("Earn more Lifetime Beans!");
-            if (confirm("Reset everything for " + (pot - state.aroma) + " Aroma Points?")) {
-                state.aroma = pot; state.beans = 0; state.inventory = {};
-                renderShop(); updateHUD();
-            }
-        }
-
-        function toast(msg) {
-            const t = document.getElementById('toast');
-            if (msg) t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 1000);
-        }
-
-        // --- Loop ---
-        function save() { localStorage.setItem('CoffeeEternal_v7', JSON.stringify(state)); }
-        function load() {
-            const s = localStorage.getItem('CoffeeEternal_v7');
-            if (s) state = JSON.parse(s);
-        }
-
-        load();
-        document.getElementById('cup-anchor').addEventListener('touchstart', (e) => { e.preventDefault(); clickCup(e); });
-        document.getElementById('cup-anchor').addEventListener('mousedown', clickCup);
-        
-        setInterval(() => {
-            let gain = calculateCps() / 10;
-            state.beans += gain;
-            state.lifetime += gain;
-            updateHUD();
-            if (document.getElementById('pane-shop').classList.contains('active')) renderShop();
-        }, 100);
-        
-        setInterval(save, 10000);
-        updateHUD();
-        renderShop();
-    </script>
-</body>
-</html>
+            init() {
+          
