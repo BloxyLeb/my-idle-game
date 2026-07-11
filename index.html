@@ -3,434 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Tycoon: Ultimate Brew</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;600;800&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Coffee Empire: Nebula Roast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6F4E37;
-            --primary-light: #A67B5B;
-            --dark: #21130d;
-            --accent: #FFAB40;
-            --bg: #1a1a1a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --text: #f5f5f5;
+            --bg: #0f0a08;
+            --panel: rgba(30, 20, 15, 0.8);
+            --accent: #ff9d5c;
+            --text: #fdf5f0;
+            --prestige-bg: #0f0a08;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body {
-            margin: 0;
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            margin: 0; font-family: 'Outfit', sans-serif;
+            background: var(--prestige-bg); color: var(--text);
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+            transition: background 2s ease;
         }
 
-        /* --- Header & Stats --- */
-        header {
+        /* Top HUD */
+        #hud {
+            padding: 15px; background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px); display: flex;
+            justify-content: space-around; align-items: center;
+            border-bottom: 2px solid var(--accent); z-index: 100;
+        }
+        .stat-box b { display: block; font-size: 1.4rem; color: var(--accent); }
+        .stat-box span { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; }
+
+        /* Layout */
+        #game-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* Left Side: Clicker */
+        #clicker-pane {
+            flex: 1.2; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; position: relative;
             padding: 20px;
-            text-align: center;
-            background: linear-gradient(to bottom, #2c1b12, transparent);
         }
 
-        #bean-display {
-            font-size: 2.5rem;
-            font-weight: 800;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            color: var(--accent);
-            text-shadow: 0 0 20px rgba(255, 171, 64, 0.3);
+        .cup-zone {
+            position: relative; cursor: pointer;
+            transition: transform 0.05s; z-index: 5;
         }
-
-        .cps-text { opacity: 0.7; font-size: 0.9rem; margin-top: 5px; }
-
-        /* --- Main Game Layout --- */
-        main {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        #clicker-section {
-            flex: 1.2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        /* The Cup */
-        .cup-wrapper {
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-        }
-
-        .cup-wrapper:active { transform: scale(0.92); }
+        .cup-zone:active { transform: scale(0.9); }
         
-        #main-cup {
-            width: 280px;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+        #main-cup { width: 220px; filter: drop-shadow(0 0 30px var(--accent)); }
+        .steam {
+            position: absolute; top: -40px; left: 50%;
+            transform: translateX(-50%); font-size: 2rem;
+            animation: steamUp 2s infinite ease-out; opacity: 0;
         }
 
-        /* Temp Gauge */
-        .temp-container {
-            width: 250px;
-            margin-top: 40px;
-            text-align: center;
-        }
-        .gauge-bar {
-            height: 12px;
-            background: #333;
-            border-radius: 20px;
-            overflow: hidden;
-            border: 2px solid #444;
-            position: relative;
-        }
-        #temp-fill {
-            height: 100%;
-            width: 50%;
-            background: linear-gradient(90deg, #4facfe 0%, #ff0844 100%);
-            transition: width 0.3s;
-        }
-        .temp-target {
-            position: absolute;
-            left: 75%; width: 15%; height: 100%;
-            background: rgba(255,255,255,0.3);
-            border-left: 2px solid white;
-            border-right: 2px solid white;
+        @keyframes steamUp {
+            0% { transform: translate(-50%, 0) scale(1); opacity: 0; }
+            50% { opacity: 0.6; }
+            100% { transform: translate(-50%, -80px) scale(1.5); opacity: 0; }
         }
 
-        /* --- UI Panels (Shop/Stats/etc) --- */
-        #ui-section {
-            flex: 1;
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-left: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            flex-direction: column;
+        /* Center Multiplier Tag */
+        #frenzy-overlay {
+            position: absolute; top: 20%; font-weight: 900;
+            font-size: 2.5rem; color: #fff; text-shadow: 0 0 20px #ff0;
+            display: none; pointer-events: none; z-index: 20;
         }
 
-        .tabs {
-            display: flex;
-            background: rgba(0,0,0,0.2);
+        /* Right Side: UI */
+        #ui-pane {
+            flex: 1; background: var(--panel);
+            backdrop-filter: blur(15px); border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column;
         }
+
+        .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .tab {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            border-bottom: 3px solid transparent;
+            flex: 1; padding: 15px; text-align: center; cursor: pointer;
+            font-weight: 600; font-size: 0.9rem; opacity: 0.5;
         }
-        .tab.active {
-            border-bottom: 3px solid var(--accent);
-            background: rgba(255,255,255,0.05);
-        }
+        .tab.active { opacity: 1; border-bottom: 3px solid var(--accent); background: rgba(255,157,92,0.1); }
 
-        .panel {
-            display: none;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        .panel.active { display: flex; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; }
 
-        /* Shop Cards */
-        .card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.2s;
+        /* Shop Elements */
+        .controls { display: flex; gap: 5px; margin-bottom: 15px; }
+        .q-btn {
+            flex: 1; padding: 8px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); color: white;
+            border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+        }
+        .q-btn.active { background: var(--accent); color: #000; font-weight: bold; }
+
+        .upgrade-card {
+            background: rgba(255,255,255,0.03); border-radius: 8px;
+            padding: 12px; margin-bottom: 10px; display: flex;
+            justify-content: space-between; align-items: center;
+            border: 1px solid rgba(255,255,255,0.05); transition: 0.2s;
             cursor: pointer;
         }
-        .card:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
-        .card.disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        
-        .card-info b { display: block; font-size: 1rem; color: var(--accent); }
-        .card-info span { font-size: 0.75rem; opacity: 0.6; }
-        .price-tag { font-weight: 800; color: #fff; }
+        .upgrade-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+        .upgrade-card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
 
-        /* Achievements */
-        .ach-card {
-            padding: 10px;
-            border-radius: 8px;
-            background: #2c1b12;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-            border-left: 4px solid #444;
+        .u-info b { color: var(--accent); display: block; }
+        .u-info i { font-size: 0.75rem; opacity: 0.6; display: block; font-style: normal; }
+        .u-cost { font-weight: 900; font-size: 1rem; }
+
+        /* Floating Text */
+        .float-text {
+            position: absolute; pointer-events: none;
+            font-weight: 900; color: white; animation: floatUp 0.8s forwards;
+            z-index: 1000;
         }
-        .ach-card.unlocked { border-left-color: var(--accent); background: #3d2b1f; }
-
-        /* Floating Coffee Emoji */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            animation: float-particle 1s ease-out forwards;
-            font-size: 24px;
-            z-index: 100;
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
         }
 
-        @keyframes float-particle {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-150px) rotate(20deg) scale(1.5); opacity: 0; }
+        /* Prestige Button */
+        .prestige-btn {
+            width: 100%; padding: 20px; background: linear-gradient(45deg, #6200ea, #ff9d5c);
+            border: none; border-radius: 8px; color: white; font-weight: 900;
+            cursor: pointer; margin-top: 20px;
         }
 
-        /* Mobile Adjustments */
-        @media (max-width: 850px) {
-            main { flex-direction: column; }
-            #ui-section { border-left: none; border-top: 1px solid rgba(255,255,255,0.1); }
-            #main-cup { width: 180px; }
-            #clicker-section { padding: 40px 0; }
+        /* Mobile */
+        @media (max-width: 768px) {
+            #game-container { flex-direction: column; }
+            #ui-pane { flex: 1.5; }
+            #main-cup { width: 140px; }
+            #hud { padding: 10px; }
+            .stat-box b { font-size: 1rem; }
         }
-
-        /* Settings Buttons */
-        .btn {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .btn-danger { background: #ff4444; color: white; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div id="bean-display">0 Beans</div>
-        <div class="cps-text">Production: <span id="cps-val">0</span> per sec</div>
-    </header>
+    <div id="hud">
+        <div class="stat-box">
+            <span id="label-beans">Total Beans</span>
+            <b id="beans-val">0</b>
+        </div>
+        <div class="stat-box">
+            <span>Per Second</span>
+            <b id="cps-val">0</b>
+        </div>
+        <div class="stat-box">
+            <span>Prestige Multi</span>
+            <b id="multi-val">1.0x</b>
+        </div>
+    </div>
 
-    <main>
-        <section id="clicker-section">
-            <div class="cup-wrapper" id="cup-btn">
+    <div id="game-container">
+        <div id="clicker-pane">
+            <div id="frenzy-overlay">BEAN FRENZY! x7</div>
+            <div class="cup-zone" id="cup">
+                <div class="steam">♨</div>
+                <div class="steam" style="animation-delay: 0.5s">♨</div>
                 <svg id="main-cup" viewBox="0 0 100 100">
-                    <path d="M20,40 Q20,90 50,90 Q80,90 80,40" fill="none" stroke="#fff" stroke-width="2"/>
-                    <path d="M22,42 Q22,88 50,88 Q78,88 78,42 Z" fill="#3d2b1f"/>
-                    <path d="M80,50 Q95,50 95,65 Q95,80 80,80" fill="none" stroke="#fff" stroke-width="4"/>
-                    <rect x="20" y="35" width="60" height="8" rx="4" fill="#fff"/>
+                    <path d="M20,30 Q20,80 50,80 Q80,80 80,30 Z" fill="#fff"/>
+                    <path d="M25,35 Q25,75 50,75 Q75,75 75,35 Z" fill="#4E342E"/>
+                    <rect x="15" y="25" width="70" height="8" rx="4" fill="#eee"/>
+                    <path d="M80,40 Q95,40 95,55 Q95,70 80,70" fill="none" stroke="#fff" stroke-width="5"/>
                 </svg>
             </div>
-            
-            <div class="temp-container">
-                <div class="gauge-bar">
-                    <div class="temp-target"></div>
-                    <div id="temp-fill"></div>
-                </div>
-                <div class="cps-text" style="margin-top:10px">Temp: <span id="temp-val">50</span>°C</div>
-                <div id="multiplier-tag" style="color:var(--accent); font-weight:bold; visibility:hidden">🔥 PERFECT BREW: 2x CLICK</div>
-            </div>
-        </section>
+        </div>
 
-        <section id="ui-section">
+        <div id="ui-pane">
             <div class="tabs">
-                <div class="tab active" onclick="showPanel('shop')">Shop</div>
-                <div class="tab" onclick="showPanel('achievements')">Awards</div>
-                <div class="tab" onclick="showPanel('settings')">Settings</div>
+                <div class="tab active" onclick="switchTab('shop')">UPGRADES</div>
+                <div class="tab" onclick="switchTab('prestige')">PRESTIGE</div>
+                <div class="tab" onclick="switchTab('settings')">SETTINGS</div>
             </div>
 
-            <!-- Shop Panel -->
-            <div id="shop" class="panel active"></div>
+            <div id="tab-shop" class="content-scroll active-tab">
+                <div class="controls">
+                    <button class="q-btn active" onclick="setQty(1)">x1</button>
+                    <button class="q-btn" onclick="setQty(10)">x10</button>
+                    <button class="q-btn" onclick="setQty(100)">x100</button>
+                </div>
+                <div id="shop-list"></div>
+            </div>
 
-            <!-- Achievements Panel -->
-            <div id="achievements" class="panel">
-                <h3>Milestones</h3>
+            <div id="tab-prestige" class="content-scroll" style="display:none">
+                <h2>Fresh Roast</h2>
+                <p>Reset all beans and upgrades for a permanent production boost based on your lifetime earnings.</p>
+                <div id="prestige-info" style="margin: 20px 0; font-size: 1.2rem; color: var(--accent);">
+                    Potential Bonus: +0%
+                </div>
+                <button class="prestige-btn" onclick="prestige()">PERFORM FRESH ROAST</button>
+                <h3 style="margin-top:40px">Achievements</h3>
                 <div id="ach-list"></div>
             </div>
 
-            <!-- Settings Panel -->
-            <div id="settings" class="panel">
+            <div id="tab-settings" class="content-scroll" style="display:none">
                 <h3>Settings</h3>
-                <button class="btn" onclick="saveGame()">Force Save</button>
-                <button class="btn btn-danger" onclick="resetGame()">Reset Progress</button>
-                <p style="font-size: 0.7rem; margin-top: 20px; opacity: 0.5;">Brewmaster Tycoon v2.0<br>Made for GitHub Index</p>
+                <label><input type="checkbox" id="mute-check"> Mute Sounds</label>
+                <br><br>
+                <button class="q-btn" onclick="hardReset()" style="background:#ff4444">Wipe All Progress</button>
+                <p style="margin-top:20px; opacity:0.5; font-size:0.8rem">Auto-saving to LocalStorage...</p>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
 
     <script>
-        // --- Game Config & Data ---
+        // --- Core Variables ---
         let state = {
             beans: 0,
-            totalBeans: 0,
-            cps: 0,
-            temp: 50,
+            totalLifetime: 0,
+            prestigeMulti: 1.0,
             inventory: {},
-            achievements: []
+            buyQty: 1,
+            lastSave: Date.now()
         };
 
-        const items = [
-            { id: 'intern', name: 'Coffee Intern', cost: 15, cps: 0.5, desc: 'Taps the cup for you.' },
-            { id: 'press', name: 'French Press', cost: 100, cps: 3, desc: 'More caffeine, more beans.' },
-            { id: 'machine', name: 'Espresso Pro', cost: 500, cps: 12, desc: 'Professional grade steam.' },
-            { id: 'truck', name: 'Coffee Truck', cost: 2500, cps: 45, desc: 'Sell on the move.' },
-            { id: 'factory', name: 'Roast Factory', cost: 12000, cps: 150, desc: 'Industrial scale brewing.' }
+        const baseItems = [
+            { id: 't1', name: 'Auto-Stirrer', cost: 15, cps: 0.5, desc: 'A spoon that moves by itself.' },
+            { id: 't2', name: 'Coffee Intern', cost: 100, cps: 3, desc: 'Fresh out of college.' },
+            { id: 't3', name: 'French Press', cost: 1100, cps: 15, desc: 'Getting serious now.' },
+            { id: 't4', name: 'Espresso Unit', cost: 12000, cps: 65, desc: 'High pressure brewing.' },
+            { id: 't5', name: 'Coffee Truck', cost: 130000, cps: 350, desc: 'Expanding the reach.' },
+            { id: 't6', name: 'Local Cafe', cost: 1400000, cps: 1800, desc: 'Own the street.' },
+            { id: 't7', name: 'Industrial Roastery', cost: 20000000, cps: 12000, desc: 'Global supply chain.' },
+            { id: 't8', name: 'Coffee Moonbase', cost: 500000000, cps: 95000, desc: 'Low gravity beans.' }
         ];
 
-        const milestones = [
-            { id: 'first_100', name: 'First Sip', req: 100, text: 'Collect 100 total beans' },
-            { id: 'thousand', name: 'Bean King', req: 1000, text: 'Collect 1,000 total beans' },
-            { id: 'temp_master', name: 'Master Brewer', req: 5000, text: 'Reach 5,000 beans' }
-        ];
+        let frenzyTimer = 0;
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // --- Initialization ---
+        // --- Audio Synth ---
+        function playSound(freq, type, dur) {
+            if (document.getElementById('mute-check').checked) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+        }
+
+        // --- Logic ---
         function init() {
-            const saved = localStorage.getItem('coffeeClickerSave');
+            let saved = localStorage.getItem('NebulaRoastSave');
             if (saved) state = JSON.parse(saved);
             
-            items.forEach(item => {
+            // Initialize 100 levels of upgrades mathematically
+            baseItems.forEach(item => {
                 if (!state.inventory[item.id]) state.inventory[item.id] = 0;
             });
 
             renderShop();
-            updateUI();
             gameLoop();
         }
 
-        // --- Core Logic ---
         function gameLoop() {
             setInterval(() => {
-                // Production
-                if (state.cps > 0) {
-                    addBeans(state.cps / 10);
+                let currentCps = calculateCps();
+                let gain = (currentCps / 10);
+                if (frenzyTimer > 0) {
+                    gain *= 7;
+                    frenzyTimer--;
+                    document.getElementById('frenzy-overlay').style.display = 'block';
+                } else {
+                    document.getElementById('frenzy-overlay').style.display = 'none';
                 }
 
-                // Temp Cooling
-                if (state.temp > 20) state.temp -= 0.2;
+                state.beans += gain;
+                state.totalLifetime += gain;
+                updateHUD();
                 
-                checkAchievements();
-                updateUI();
+                // Random Frenzy Spawn (0.1% chance per tick)
+                if (Math.random() < 0.001 && frenzyTimer <= 0) {
+                    frenzyTimer = 100; // 10 seconds
+                    playSound(880, 'triangle', 0.5);
+                }
             }, 100);
 
-            // Auto-save every 30 seconds
-            setInterval(saveGame, 30000);
+            setInterval(() => {
+                localStorage.setItem('NebulaRoastSave', JSON.stringify(state));
+            }, 5000);
         }
 
-        function addBeans(amt) {
-            state.beans += amt;
-            state.totalBeans += amt;
+        function calculateCps() {
+            let total = 0;
+            baseItems.forEach(item => {
+                total += (state.inventory[item.id] * item.cps);
+            });
+            return total * state.prestigeMulti;
         }
 
-        function handleCupClick(e) {
-            const isPerfect = state.temp >= 75 && state.temp <= 90;
-            const power = isPerfect ? 2 : 1;
+        function updateHUD() {
+            document.getElementById('beans-val').innerText = Math.floor(state.beans).toLocaleString();
+            document.getElementById('cps-val').innerText = (calculateCps() * (frenzyTimer > 0 ? 7 : 1)).toFixed(1);
+            document.getElementById('multi-val').innerText = state.prestigeMulti.toFixed(2) + 'x';
             
-            addBeans(power);
-            state.temp = Math.min(100, state.temp + 1.2);
-            
-            spawnParticle(e.clientX, e.clientY);
-            updateUI();
-        }
+            // Update prestige potential
+            let pot = Math.max(0, (Math.floor(Math.sqrt(state.totalLifetime / 1000000) * 10) / 10));
+            document.getElementById('prestige-info').innerText = `Potential Bonus Multiplier: +${pot}x`;
 
-        // --- UI Functions ---
-        function updateUI() {
-            document.getElementById('bean-display').innerText = `${Math.floor(state.beans).toLocaleString()} Beans`;
-            document.getElementById('cps-val').innerText = state.cps.toFixed(1);
-            
-            // Temp UI
-            const fill = document.getElementById('temp-fill');
-            fill.style.width = `${state.temp}%`;
-            document.getElementById('temp-val').innerText = Math.floor(state.temp);
-            
-            const isPerfect = state.temp >= 75 && state.temp <= 90;
-            document.getElementById('multiplier-tag').style.visibility = isPerfect ? 'visible' : 'hidden';
-            fill.style.filter = isPerfect ? 'hue-rotate(90deg) brightness(1.5)' : 'none';
-
+            // Dim/Light upgrades
             renderShop();
         }
 
-        function renderShop() {
-            const shop = document.getElementById('shop');
-            shop.innerHTML = '';
-            items.forEach(item => {
-                const count = state.inventory[item.id];
-                const currentCost = Math.floor(item.cost * Math.pow(1.15, count));
-                const canAfford = state.beans >= currentCost;
-
-                const card = document.createElement('div');
-                card.className = `card ${canAfford ? '' : 'disabled'}`;
-                card.onclick = () => buyItem(item.id, currentCost, item.cps);
-                card.innerHTML = `
-                    <div class="card-info">
-                        <b>${item.name} (${count})</b>
-                        <span>+${item.cps} CPS • ${item.desc}</span>
-                    </div>
-                    <div class="price-tag">☕ ${currentCost}</div>
-                `;
-                shop.appendChild(card);
-            });
+        function handleCupClick(e) {
+            let clickPower = (1 + (calculateCps() * 0.05)) * state.prestigeMulti;
+            if (frenzyTimer > 0) clickPower *= 7;
+            
+            state.beans += clickPower;
+            state.totalLifetime += clickPower;
+            
+            playSound(150 + Math.random() * 50, 'sine', 0.1);
+            
+            // Pop effect
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+            createFloatText(x, y, `+${Math.floor(clickPower)} ☕`);
         }
 
-        function buyItem(id, cost, cpsGain) {
+        function createFloatText(x, y, txt) {
+            let el = document.createElement('div');
+            el.className = 'float-text';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.innerText = txt;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function renderShop() {
+            const list = document.getElementById('shop-list');
+            if (document.getElementById('tab-shop').style.display === 'none') return;
+
+            let html = '';
+            baseItems.forEach(item => {
+                let count = state.inventory[item.id];
+                let cost = 0;
+                // Calculate mass cost
+                for(let i=0; i<state.buyQty; i++) {
+                    cost += Math.floor(item.cost * Math.pow(1.15, count + i));
+                }
+
+                let canAfford = state.beans >= cost;
+                html += `
+                    <div class="upgrade-card ${canAfford ? '' : 'disabled'}" onclick="buy('${item.id}', ${cost})">
+                        <div class="u-info">
+                            <b>${item.name} [Lv.${count}]</b>
+                            <i>Adds ${item.cps} CPS per unit</i>
+                        </div>
+                        <div class="u-cost">☕ ${cost.toLocaleString()}</div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        function buy(id, cost) {
             if (state.beans >= cost) {
                 state.beans -= cost;
-                state.inventory[id]++;
-                state.cps += cpsGain;
-                updateUI();
+                state.inventory[id] += state.buyQty;
+                playSound(440, 'square', 0.05);
+                updateHUD();
             }
         }
 
-        function checkAchievements() {
-            const list = document.getElementById('ach-list');
-            list.innerHTML = '';
-            milestones.forEach(m => {
-                const unlocked = state.totalBeans >= m.req;
-                const div = document.createElement('div');
-                div.className = `ach-card ${unlocked ? 'unlocked' : ''}`;
-                div.innerHTML = `<b>${unlocked ? '✅' : '🔒'} ${m.name}</b><br>${m.text}`;
-                list.appendChild(div);
-            });
+        function setQty(q) {
+            state.buyQty = q;
+            document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderShop();
         }
 
-        function spawnParticle(x, y) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = `${x}px`;
-            p.style.top = `${y}px`;
-            p.innerText = '☕';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 1000);
+        function switchTab(t) {
+            document.querySelectorAll('.content-scroll').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.tab').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-' + t).style.display = 'block';
+            event.target.classList.add('active');
+            renderShop();
         }
 
-        function showPanel(id) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('active');
+        function prestige() {
+            let pot = Math.max(0, (Math.floor(Math.sqrt(state.totalLifetime / 1000000) * 10) / 10));
+            if (pot < 0.1) {
+                alert("You need more lifetime beans to perform a Fresh Roast! (Reach at least 1 Million total)");
+                return;
+            }
+            if (confirm(`Fresh Roast will reset your current beans and upgrades, but add ${pot}x to your permanent multiplier. Proceed?`)) {
+                state.prestigeMulti += pot;
+                state.beans = 0;
+                baseItems.forEach(i => state.inventory[i.id] = 0);
+                
+                // Visual Prestige Change
+                document.body.style.background = `hsl(${Math.random()*360}, 30%, 10%)`;
+                
+                playSound(600, 'sine', 1);
+                updateHUD();
+                switchTab('shop');
+            }
         }
 
-        function saveGame() {
-            localStorage.setItem('coffeeClickerSave', JSON.stringify(state));
-        }
-
-        function resetGame() {
-            if(confirm("Are you sure? You will lose all your beans!")) {
+        function hardReset() {
+            if (confirm("DELETE EVERYTHING?")) {
                 localStorage.clear();
                 location.reload();
             }
         }
 
-        // Listeners
-        document.getElementById('cup-btn').addEventListener('mousedown', handleCupClick);
-        
-        // Start
+        // --- Init ---
+        document.getElementById('cup').addEventListener('mousedown', handleCupClick);
         init();
     </script>
 </body>
-</html>
+    </html>
