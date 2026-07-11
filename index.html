@@ -9,18 +9,33 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; text-align: center; user-select: none; }
         .container { max-width: 400px; margin: 0 auto; }
 
-        /* Settings Modal */
-        #settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: var(--panel); padding: 20px; border-radius: 15px; text-align: left; border: 2px solid var(--accent); }
+        /* Settings Modal - Animated */
+        #settings-overlay { 
+            display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; box-sizing: border-box;
+            opacity: 0; visibility: hidden; transition: 0.3s ease; align-items: center; justify-content: center;
+        }
+        #settings-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { 
+            background: var(--panel); padding: 25px; border-radius: 20px; text-align: left; 
+            border: 2px solid var(--accent); width: 100%; max-width: 300px;
+            transform: translateY(50px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #settings-overlay.active .modal-content { transform: translateY(0); }
         
-        /* Main UI */
+        /* Floating Pop Effect */
+        .floating-text { position: fixed; pointer-events: none; font-weight: 900; font-size: 24px; z-index: 9999; text-shadow: 0 0 5px black; animation: popEffect 0.8s ease-out forwards; }
+        @keyframes popEffect { 
+            0% { transform: translateY(0) scale(0.5); opacity: 1; } 
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; } 
+        }
+        
+        /* UI Elements */
         #main-display { background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .settings-btn { background: #2c3e50; border: 1px solid var(--accent); color: var(--accent); padding: 8px; width: 100%; margin-bottom: 15px; border-radius: 8px; font-weight: bold; }
-        
         button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.1s; }
         #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; margin-bottom: 20px; }
         .upgrade-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: #0f3460; color: white; display: flex; justify-content: space-between; }
-        
         .dashboard { background: rgba(15, 52, 96, 0.6); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
     </style>
 </head>
@@ -41,7 +56,6 @@
             <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">$50</span></button>
         </div>
 
-        <!-- Dashboard (Restored) -->
         <div class="dashboard">
             <h3>Dashboard</h3>
             <p id="multiplier">Multiplier: 1.0x</p>
@@ -64,13 +78,26 @@
         let costs = { intern: 10, auto: 50 };
 
         function toggleSettings() {
-            let el = document.getElementById('settings-overlay');
-            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+            const el = document.getElementById('settings-overlay');
+            el.classList.toggle('active');
         }
 
-        function clickMoney() {
+        // Pop effect
+        function spawnFloatingText(event, amount) {
+            let float = document.createElement('div');
+            float.className = 'floating-text';
+            float.innerText = `+$${amount}`;
+            float.style.left = (event.clientX || 200) + 'px';
+            float.style.top = (event.clientY || 300) + 'px';
+            float.style.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
+            document.body.appendChild(float);
+            setTimeout(() => float.remove(), 1000);
+        }
+
+        function clickMoney(event) {
             money += perClick;
             totalEarnings += perClick;
+            spawnFloatingText(event, perClick);
             if(document.getElementById('soundToggle').checked) playClickSound();
             updateDisplay();
         }
