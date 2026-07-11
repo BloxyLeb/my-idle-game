@@ -11,14 +11,17 @@
 
         /* Settings Modal */
         #settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: var(--panel); padding: 20px; border-radius: 15px; text-align: left; }
+        .modal-content { background: var(--panel); padding: 20px; border-radius: 15px; text-align: left; border: 2px solid var(--accent); }
         
         /* Main UI */
         #main-display { background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .settings-btn { background: #2c3e50; border: 1px solid var(--accent); color: var(--accent); padding: 8px; width: 100%; margin-bottom: 15px; border-radius: 8px; font-weight: bold; }
+        
         button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.1s; }
-        .settings-btn { background: #4ecca3; padding: 10px; width: 100%; margin-bottom: 10px; }
-        #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; }
+        #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; margin-bottom: 20px; }
         .upgrade-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: #0f3460; color: white; display: flex; justify-content: space-between; }
+        
+        .dashboard { background: rgba(15, 52, 96, 0.6); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
@@ -37,22 +40,27 @@
             <button class="upgrade-btn" onclick="buyUpgrade('intern')">Intern <span id="cost-intern">$10</span></button>
             <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">$50</span></button>
         </div>
+
+        <!-- Dashboard (Restored) -->
+        <div class="dashboard">
+            <h3>Dashboard</h3>
+            <p id="multiplier">Multiplier: 1.0x</p>
+            <p id="ach-list">Achievements: None</p>
+            <button id="prestigeBtn" onclick="prestige()" style="background:#b91c1c; color:white; width:100%; padding:10px;">PRESTIGE (Locked)</button>
+        </div>
     </div>
 
-    <!-- The Settings Modal -->
     <div id="settings-overlay">
         <div class="modal-content">
             <h3>Settings</h3>
             <label><input type="checkbox" id="buyMaxToggle"> Buy Max Mode</label><br><br>
             <label><input type="checkbox" id="soundToggle" checked> Enable Sounds</label><br><br>
-            <button onclick="prestige()" style="background:#b91c1c; color:white; padding:10px; width:100%;">HARD RESET (PRESTIGE)</button>
-            <br><br>
-            <button onclick="toggleSettings()" style="width:100%;">CLOSE</button>
+            <button onclick="toggleSettings()" style="width:100%; padding:10px; background:var(--accent);">CLOSE</button>
         </div>
     </div>
 
     <script>
-        let money = 0, perClick = 1, perSecond = 0, lastSaved = Date.now();
+        let money = 0, perClick = 1, perSecond = 0, lastSaved = Date.now(), totalEarnings = 0;
         let costs = { intern: 10, auto: 50 };
 
         function toggleSettings() {
@@ -60,15 +68,14 @@
             el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
-        function clickMoney(event) {
+        function clickMoney() {
             money += perClick;
+            totalEarnings += perClick;
             if(document.getElementById('soundToggle').checked) playClickSound();
             updateDisplay();
         }
 
         function buyUpgrade(type) {
-            let buyMax = document.getElementById('buyMaxToggle').checked;
-            // Logic for buy max would go here! 
             if (money >= costs[type]) {
                 money -= costs[type];
                 if (type === 'intern') perClick++;
@@ -82,11 +89,16 @@
             document.getElementById('money').innerText = '$' + Math.floor(money);
             document.getElementById('mps').innerText = `Income: ${perSecond}/sec`;
             for(let t in costs) document.getElementById(`cost-${t}`).innerText = `$${costs[t]}`;
+            
+            let canPrestige = totalEarnings >= 1000000;
+            document.getElementById('prestigeBtn').disabled = !canPrestige;
+            document.getElementById('prestigeBtn').innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Locked)";
+            
             saveGame();
         }
 
         function saveGame() {
-            localStorage.setItem('tycoonSave', JSON.stringify({ money, perClick, perSecond, costs, lastSaved: Date.now() }));
+            localStorage.setItem('tycoonSave', JSON.stringify({ money, perClick, perSecond, costs, lastSaved: Date.now(), totalEarnings }));
         }
 
         function playClickSound() {
@@ -100,17 +112,16 @@
         window.onload = () => {
             const saved = JSON.parse(localStorage.getItem('tycoonSave'));
             if (saved) {
-                // Offline Earning Calculation
                 let secondsPassed = (Date.now() - saved.lastSaved) / 1000;
                 let offlineCash = Math.floor(secondsPassed * saved.perSecond);
                 money = saved.money + offlineCash;
+                totalEarnings = (saved.totalEarnings || 0) + offlineCash;
                 perClick = saved.perClick; perSecond = saved.perSecond; costs = saved.costs;
-                alert(`Welcome back! You earned $${offlineCash} while you were away.`);
             }
-            setInterval(() => { money += perSecond; updateDisplay(); }, 1000);
+            setInterval(() => { money += perSecond; totalEarnings += perSecond; updateDisplay(); }, 1000);
         };
         
-        function prestige() { location.reload(); localStorage.clear(); }
+        function prestige() { if(confirm("Reset?")) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
