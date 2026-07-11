@@ -3,363 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Empire: Quantum Roast</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <title>Coffee Empire: Barista's Dream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0d0c0b;
-            --panel: #1a1816;
-            --accent: #e29578;
-            --text: #edf6f9;
+            --bg: #0a0807;
+            --panel: #161311;
+            --accent: #ff9d5c;
+            --accent-glow: rgba(255, 157, 92, 0.4);
+            --text: #fdf5f0;
             --secondary: #83c5be;
-            --rare: #ffddd2;
-            --prestige: #a29bfe;
+            --locked: #3a322d;
         }
 
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation; /* FIXES MOBILE ZOOM/DELAY */
+            touch-action: manipulation;
         }
 
         body {
             margin: 0; font-family: 'Outfit', sans-serif;
             background: var(--bg); color: var(--text);
-            height: 100vh; display: flex; flex-direction: column;
-            overflow: hidden; /* Prevents whole page bounce */
+            height: 100vh; height: 100dvh; /* Dynamic height for mobile */
+            display: flex; flex-direction: column;
+            overflow: hidden;
         }
 
-        /* --- Compact HUD --- */
+        /* --- Header: Neon HUD --- */
         #hud {
-            padding: 10px 15px; background: rgba(0,0,0,0.8);
-            display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
-            border-bottom: 2px solid var(--accent);
+            display: grid; grid-template-columns: 1fr 1fr;
+            padding: 12px; background: rgba(0,0,0,0.8);
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+            z-index: 100;
         }
-        .stat { font-size: 0.8rem; opacity: 0.8; }
-        .stat b { display: block; font-size: 1.1rem; color: var(--accent); font-family: 'JetBrains Mono'; }
+        .stat { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        .stat b { display: block; font-size: 1.2rem; color: var(--accent); font-family: 'JetBrains Mono'; }
 
-        /* --- Game Screen Split --- */
-        #game-area {
-            flex: 1; display: flex; flex-direction: column;
-        }
-
-        #clicker-section {
-            height: 35vh; display: flex; flex-direction: column;
+        /* --- Main Area (Reduced Height for more Shop space) --- */
+        #view-top {
+            height: 30vh; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            position: relative; background: radial-gradient(circle, #2c1b12 0%, #0d0c0b 100%);
+            position: relative; overflow: hidden;
         }
 
-        #cup-wrapper { position: relative; cursor: pointer; transition: 0.05s; }
-        #cup-wrapper:active { transform: scale(0.9); }
-        #cup-img { width: 140px; filter: drop-shadow(0 0 20px rgba(226, 149, 120, 0.4)); }
-
-        /* --- UI Panels (Scrollable) --- */
-        #menu-section {
-            flex: 1; background: var(--panel); border-top-left-radius: 20px; border-top-right-radius: 20px;
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        /* Animated Steam */
+        .steam-container { position: absolute; top: 15%; display: flex; gap: 10px; }
+        .steam-line {
+            width: 4px; height: 30px; background: rgba(255,255,255,0.2);
+            border-radius: 10px; filter: blur(4px);
+            animation: steamRise 2s infinite ease-in-out;
+        }
+        @keyframes steamRise {
+            0% { transform: translateY(0) scaleX(1); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-60px) scaleX(2); opacity: 0; }
         }
 
-        .tab-nav {
-            display: flex; overflow-x: auto; background: rgba(0,0,0,0.2);
-            scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.05);
+        #cup-box { 
+            position: relative; cursor: pointer; transition: 0.1s; z-index: 10;
         }
-        .tab-nav::-webkit-scrollbar { display: none; }
+        #cup-box:active { transform: scale(0.85); }
+        #main-cup { width: 130px; filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+        /* --- UI Menu (Takes up remaining space) --- */
+        #view-bottom {
+            flex: 1; background: var(--panel);
+            border-top: 2px solid rgba(255,255,255,0.1);
+            border-top-left-radius: 25px; border-top-right-radius: 25px;
+            display: flex; flex-direction: column;
+            overflow: hidden; /* Important for inner scroll */
+        }
+
+        .tabs {
+            display: flex; background: rgba(0,0,0,0.3); padding: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
         .tab-btn {
-            padding: 15px 20px; border: none; background: none; color: #fff;
-            white-space: nowrap; font-family: inherit; font-weight: 600; font-size: 0.8rem;
-            opacity: 0.5; transition: 0.2s;
+            flex: 1; padding: 12px; border: none; background: none;
+            color: #fff; opacity: 0.4; font-weight: 800; font-size: 0.75rem;
+            transition: 0.3s;
         }
-        .tab-btn.active { opacity: 1; border-bottom: 3px solid var(--accent); }
+        .tab-btn.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        .pane { flex: 1; overflow-y: auto; padding: 15px; display: none; }
+        /* Scrolling Content */
+        .pane { 
+            flex: 1; overflow-y: auto; padding: 15px; display: none; 
+            padding-bottom: 40px; /* Space for the bottom browser bar */
+        }
         .pane.active { display: block; }
 
-        /* --- Cards UI --- */
+        /* --- Item Cards --- */
         .card {
-            background: rgba(255,255,255,0.03); border-radius: 12px;
-            padding: 12px; margin-bottom: 8px; display: flex;
+            background: rgba(255,255,255,0.03); border-radius: 15px;
+            padding: 15px; margin-bottom: 10px; display: flex;
             justify-content: space-between; align-items: center;
             border: 1px solid rgba(255,255,255,0.05);
+            animation: slideIn 0.3s ease-out;
         }
-        .card.can-buy { border-color: rgba(226, 149, 120, 0.3); }
-        .card.locked { opacity: 0.3; filter: grayscale(1); }
-        
-        .card-info b { display: block; color: var(--accent); font-size: 1rem; }
-        .card-info i { font-size: 0.7rem; opacity: 0.6; font-style: normal; }
-        .card-cost { text-align: right; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 0.9rem; }
+        .card.affordable { border-color: var(--accent); background: rgba(255,157,92,0.05); }
+        .card.locked { opacity: 0.4; background: var(--locked); cursor: not-allowed; }
 
-        /* --- Popups --- */
-        .pop {
-            position: absolute; color: white; pointer-events: none;
-            font-weight: 800; animation: popOut 0.8s forwards; z-index: 100;
+        .card-meta b { display: block; font-size: 1rem; color: var(--accent); }
+        .card-meta span { font-size: 0.7rem; opacity: 0.6; }
+        .card-price { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 0.9rem; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Click Particles */
+        .particle {
+            position: absolute; pointer-events: none;
+            font-size: 1.2rem; font-weight: 900; color: #fff;
+            animation: particleFloat 0.8s ease-out forwards; z-index: 50;
         }
-        @keyframes popOut {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-80px) rotate(15deg); opacity: 0; }
+        @keyframes particleFloat {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
         }
 
-        /* --- Milestones --- */
-        .m-card { border-left: 4px solid #444; background: rgba(0,0,0,0.2); padding: 10px; margin-bottom: 5px; font-size: 0.8rem; }
-        .m-card.done { border-left-color: var(--secondary); background: rgba(131, 197, 190, 0.1); }
+        /* Mass Buy Buttons */
+        .qty-group { display: flex; gap: 5px; margin-bottom: 15px; }
+        .qty-btn {
+            flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #333;
+            background: rgba(255,255,255,0.05); color: #fff; font-size: 0.8rem;
+        }
+        .qty-btn.active { background: var(--accent); color: #000; font-weight: 800; border: none; }
 
-        .prestige-panel { text-align: center; padding: 20px; background: linear-gradient(to bottom, #2d3436, #000); border-radius: 15px; }
-
-        /* Toast */
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--accent); color: #000; padding: 10px 20px;
-            border-radius: 30px; font-weight: 800; display: none; z-index: 1000;
+        /* Prestige Screen */
+        .prestige-box {
+            text-align: center; padding: 25px; border-radius: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            border: 1px solid #a29bfe;
         }
     </style>
 </head>
 <body>
 
-    <div id="toast">Not enough beans!</div>
-
     <div id="hud">
-        <div class="stat"><span>BEANS</span><b id="beans">0</b></div>
-        <div class="stat"><span>PER SEC</span><b id="cps">0</b></div>
-        <div class="stat"><span>AROMA PTS</span><b id="aroma">0</b></div>
-        <div class="stat"><span>MULTIPLIER</span><b id="multi">1.0x</b></div>
+        <div class="stat">BEANS<b id="beans-val">0</b></div>
+        <div class="stat" style="text-align: right;">PER SEC<b id="cps-val">0</b></div>
+        <div class="stat">AROMA PTS<b id="aroma-val">0</b></div>
+        <div class="stat" style="text-align: right;">MULTIPLIER<b id="multi-val">1.0x</b></div>
     </div>
 
-    <div id="game-area">
-        <section id="clicker-section">
-            <div id="cup-wrapper">
-                <svg id="cup-img" viewBox="0 0 100 100">
-                    <path d="M20,30 Q20,85 50,85 Q80,85 80,30" fill="none" stroke="var(--accent)" stroke-width="4"/>
-                    <path d="M22,33 Q22,82 50,82 Q78,82 78,33 Z" fill="#2c1b12"/>
-                    <rect x="15" y="25" width="70" height="10" rx="5" fill="#fff"/>
-                    <path d="M80,45 Q95,45 95,60 Q95,75 80,75" fill="none" stroke="#fff" stroke-width="5"/>
-                </svg>
-            </div>
-        </section>
+    <div id="view-top">
+        <div class="steam-container">
+            <div class="steam-line" style="animation-delay: 0s"></div>
+            <div class="steam-line" style="animation-delay: 0.4s"></div>
+            <div class="steam-line" style="animation-delay: 0.8s"></div>
+        </div>
+        <div id="cup-box">
+            <svg id="main-cup" viewBox="0 0 100 100">
+                <path d="M20,30 Q20,85 50,85 Q80,85 80,30" fill="none" stroke="var(--accent)" stroke-width="4"/>
+                <path d="M22,33 Q22,82 50,82 Q78,82 78,33 Z" fill="#2c1b12"/>
+                <rect x="15" y="25" width="70" height="10" rx="5" fill="#fdf5f0"/>
+                <path d="M80,45 Q95,45 95,60 Q95,75 80,75" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+        </div>
+    </div>
 
-        <section id="menu-section">
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="setTab('shop')">SHOP</button>
-                <button class="tab-btn" onclick="setTab('milestones')">GOALS</button>
-                <button class="tab-btn" onclick="setTab('inventory')">ITEMS</button>
-                <button class="tab-btn" onclick="setTab('prestige')">PRESTIGE</button>
-            </div>
+    <div id="view-bottom">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="setTab('shop')">SHOP</button>
+            <button class="tab-btn" onclick="setTab('items')">GOALS</button>
+            <button class="tab-btn" onclick="setTab('prestige')">PRESTIGE</button>
+        </div>
 
-            <!-- Shop -->
-            <div id="pane-shop" class="pane active">
-                <div style="display:flex; gap:5px; margin-bottom:10px;">
-                    <button class="tab-btn active" style="flex:1; border:1px solid #444" id="buy-1" onclick="setQty(1)">x1</button>
-                    <button class="tab-btn" style="flex:1; border:1px solid #444" id="buy-10" onclick="setQty(10)">x10</button>
-                    <button class="tab-btn" style="flex:1; border:1px solid #444" id="buy-max" onclick="setQty('MAX')">MAX</button>
+        <div id="pane-shop" class="pane active">
+            <div class="qty-group">
+                <button class="qty-btn active" id="q1" onclick="setQty(1)">x1</button>
+                <button class="qty-btn" id="q10" onclick="setQty(10)">x10</button>
+                <button class="qty-btn" id="qmax" onclick="setQty('MAX')">MAX</button>
+            </div>
+            <div id="shop-items"></div>
+        </div>
+
+        <div id="pane-items" class="pane">
+            <h3 style="color:var(--accent)">Empire Milestones</h3>
+            <div id="goal-list"></div>
+        </div>
+
+        <div id="pane-prestige" class="pane">
+            <div class="prestige-box">
+                <h2 style="color:#a29bfe">Quantum Roast</h2>
+                <p style="font-size:0.8rem; opacity:0.7">Sacrifice your empire for Aroma Points. Each point increases production by +2% permanently.</p>
+                <div style="margin:20px 0;">
+                    <span style="font-size:0.8rem">Pending Aroma:</span><br>
+                    <b id="pending-aroma" style="font-size:2rem; color:var(--accent)">0</b>
                 </div>
-                <div id="shop-list"></div>
+                <button class="qty-btn active" style="width:100%; height:50px" onclick="doPrestige()">ASCEND NOW</button>
             </div>
-
-            <!-- Milestones -->
-            <div id="pane-milestones" class="pane">
-                <h3>Milestones</h3>
-                <div id="m-list"></div>
-            </div>
-
-            <!-- Inventory -->
-            <div id="pane-inventory" class="pane">
-                <h3>Relic Collection</h3>
-                <div id="inv-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
-            </div>
-
-            <!-- Prestige -->
-            <div id="pane-prestige" class="pane">
-                <div class="prestige-panel">
-                    <h2 style="color:var(--prestige)">Ascend Empire</h2>
-                    <p>Reset your current beans and shops for <b>Aroma Points</b>.</p>
-                    <p>Each point = +2% Production.</p>
-                    <div style="font-size:1.5rem; margin:20px 0;">Next: <b id="next-aroma" style="color:var(--accent)">0</b> Aroma</div>
-                    <button class="tab-btn" style="background:var(--prestige); color:#000; width:100%; border-radius:10px; padding:15px;" onclick="prestige()">ROAST EMPIRE</button>
-                </div>
-            </div>
-        </section>
+        </div>
     </div>
 
     <script>
-        // --- Data ---
-        const ITEMS = [
-            { id: 'stir', name: 'Plastic Stirrer', cost: 15, cps: 0.2 },
-            { id: 'intern', name: 'Intern', cost: 100, cps: 1.2 },
-            { id: 'press', name: 'French Press', cost: 1100, cps: 8 },
-            { id: 'moka', name: 'Moka Pot', cost: 12000, cps: 45 },
-            { id: 'espresso', name: 'Espresso Unit', cost: 130000, cps: 210 },
-            { id: 'truck', name: 'Coffee Truck', cost: 1400000, cps: 1100 },
-            { id: 'cafe', name: 'Street Cafe', cost: 20000000, cps: 7500 },
-            { id: 'roastery', name: 'Bulk Roastery', cost: 350000000, cps: 42000 },
-            { id: 'island', name: 'Java Island', cost: 5000000000, cps: 250000 },
-            { id: 'ship', name: 'Cargo Freighter', cost: 75000000000, cps: 1800000 },
-            { id: 'singularity', name: 'Caffeine Rift', cost: 1000000000000, cps: 12000000 }
+        // --- Game Config ---
+        const DATABASE = [
+            { id: 's1', name: 'Plastic Stirrer', cost: 15, cps: 0.2, desc: 'Every bit helps.' },
+            { id: 's2', name: 'College Intern', cost: 100, cps: 1.2, desc: 'Brewing for experience.' },
+            { id: 's3', name: 'French Press', cost: 1100, cps: 8, desc: 'More caffeine, more beans.' },
+            { id: 's4', name: 'Moka Pot', cost: 12500, cps: 42, desc: 'Classic stovetop power.' },
+            { id: 's5', name: 'Espresso Unit', cost: 140000, cps: 190, desc: 'Pro-grade steam.' },
+            { id: 's6', name: 'Coffee Truck', cost: 1600000, cps: 1050, desc: 'Brewing on the go.' },
+            { id: 's7', name: 'Artisan Cafe', cost: 20000000, cps: 6800, desc: 'The local favorite.' },
+            { id: 's8', name: 'Bulk Roastery', cost: 250000000, cps: 35000, desc: 'Industrial scale.' },
+            { id: 's9', name: 'Java Plantation', cost: 4000000000, cps: 210000, desc: 'Own the land.' },
+            { id: 's10', name: 'Coffee Singularity', cost: 100000000000, cps: 1500000, desc: 'Quantum caffeine.' }
         ];
 
-        const MILESTONES = [
-            { id: 'm1', name: 'Wake Up', req: 1000, reward: '1.2x Click Power' },
-            { id: 'm2', name: 'Local Hero', req: 50000, reward: '+5% CPS' },
-            { id: 'm3', name: 'Coffee Mogul', req: 1000000, reward: 'Unlock Prestige' }
-        ];
-
-        // --- State ---
         let state = {
             beans: 0,
             lifetime: 0,
-            cps: 0,
             aroma: 0,
-            buyQty: 1,
             inventory: {},
-            milestones: [],
-            relics: []
+            qty: 1
         };
 
         // --- Logic ---
-        function calculateCps() {
-            let base = 0;
-            ITEMS.forEach(i => base += (state.inventory[i.id] || 0) * i.cps);
-            let multi = 1 + (state.aroma * 0.02);
-            state.cps = base * multi;
-            return state.cps;
+        function init() {
+            const saved = localStorage.getItem('CoffeeDream_v6');
+            if (saved) state = JSON.parse(saved);
+            DATABASE.forEach(item => { if (!state.inventory[item.id]) state.inventory[item.id] = 0; });
+            render();
+            tick();
         }
 
-        function getCost(item, qty) {
-            let current = state.inventory[item.id] || 0;
-            if (qty === 'MAX') {
-                qty = Math.floor(Math.log(((state.beans * (1.15 - 1)) / (item.cost * Math.pow(1.15, current))) + 1) / Math.log(1.15));
-                if (qty < 1) return { cost: item.cost * Math.pow(1.15, current), qty: 1 };
-                return { cost: (item.cost * (Math.pow(1.15, current) * (Math.pow(1.15, qty) - 1))) / (1.15 - 1), qty: qty };
+        function calculateCps() {
+            let base = 0;
+            DATABASE.forEach(item => base += state.inventory[item.id] * item.cps);
+            return base * (1 + state.aroma * 0.02);
+        }
+
+        function tick() {
+            setInterval(() => {
+                let gain = calculateCps() / 10;
+                state.beans += gain;
+                state.lifetime += gain;
+                updateStats();
+            }, 100);
+            setInterval(() => localStorage.setItem('CoffeeDream_v6', JSON.stringify(state)), 10000);
+        }
+
+        function getPurchaseDetails(item) {
+            let current = state.inventory[item.id];
+            let count = state.qty;
+            if (count === 'MAX') {
+                count = Math.floor(Math.log(((state.beans * (1.15 - 1)) / (item.cost * Math.pow(1.15, current))) + 1) / Math.log(1.15));
+                count = Math.max(1, count);
             }
-            let total = 0;
-            for(let i=0; i<qty; i++) total += item.cost * Math.pow(1.15, current + i);
-            return { cost: total, qty: qty };
+            let totalCost = (item.cost * (Math.pow(1.15, current) * (Math.pow(1.15, count) - 1))) / (1.15 - 1);
+            return { cost: Math.floor(totalCost), count: count };
         }
 
         function buy(id) {
-            const item = ITEMS.find(i => i.id === id);
-            const { cost, qty } = getCost(item, state.buyQty);
-            
+            const item = DATABASE.find(i => i.id === id);
+            const { cost, count } = getPurchaseDetails(item);
             if (state.beans >= cost) {
                 state.beans -= cost;
-                state.inventory[id] = (state.inventory[id] || 0) + qty;
+                state.inventory[id] += count;
                 render();
-            } else {
-                toast();
             }
+        }
+
+        // --- UI ---
+        function updateStats() {
+            document.getElementById('beans-val').innerText = Math.floor(state.beans).toLocaleString();
+            document.getElementById('cps-val').innerText = calculateCps().toLocaleString(undefined, {maximumFractionDigits:1});
+            document.getElementById('aroma-val').innerText = state.aroma;
+            document.getElementById('multi-val').innerText = (1 + state.aroma * 0.02).toFixed(2) + 'x';
+            
+            let pot = Math.floor(Math.sqrt(state.lifetime / 1000000));
+            document.getElementById('pending-aroma').innerText = Math.max(0, pot - state.aroma);
         }
 
         function render() {
-            document.getElementById('beans').innerText = Math.floor(state.beans).toLocaleString();
-            document.getElementById('cps').innerText = calculateCps().toLocaleString(undefined, {maximumFractionDigits:1});
-            document.getElementById('aroma').innerText = state.aroma;
-            document.getElementById('multi').innerText = (1 + state.aroma * 0.02).toFixed(2) + 'x';
-            
-            // Potential Aroma
-            let pot = Math.floor(Math.sqrt(state.lifetime / 1000000));
-            document.getElementById('next-aroma').innerText = Math.max(0, pot - state.aroma);
+            updateStats();
+            const shop = document.getElementById('shop-items');
+            shop.innerHTML = '';
 
-            // Shop
-            const list = document.getElementById('shop-list');
-            list.innerHTML = '';
-            ITEMS.forEach(i => {
-                const { cost, qty } = getCost(i, state.buyQty);
-                const locked = state.lifetime < i.cost * 0.5;
-                if (locked) return;
+            // Show current items + next 3 locked items
+            let visibleCount = 0;
+            DATABASE.forEach(item => {
+                const currentOwned = state.inventory[item.id];
+                const isLocked = state.lifetime < item.cost * 0.3 && currentOwned === 0;
                 
-                const div = document.createElement('div');
-                div.className = `card ${state.beans >= cost ? 'can-buy' : ''}`;
-                div.onclick = () => buy(i.id);
-                div.innerHTML = `
-                    <div class="card-info">
-                        <b>${i.name} [${state.inventory[i.id] || 0}]</b>
-                        <i>+${i.cps} CPS each</i>
-                    </div>
-                    <div class="card-cost" style="color:${state.beans >= cost ? 'var(--secondary)' : 'var(--accent)'}">
-                        ☕ ${Math.floor(cost).toLocaleString()}
-                    </div>
-                `;
-                list.appendChild(div);
-            });
+                if (isLocked && visibleCount > 2) return;
+                if (isLocked) visibleCount++;
 
-            // Milestones
-            const mList = document.getElementById('m-list');
-            mList.innerHTML = '';
-            MILESTONES.forEach(m => {
-                const done = state.lifetime >= m.req;
-                mList.innerHTML += `<div class="m-card ${done?'done':''}"><b>${m.name}</b><br>${m.reward} (${m.req.toLocaleString()} beans)</div>`;
+                const { cost, count } = getPurchaseDetails(item);
+                const affordable = state.beans >= cost;
+
+                const card = document.createElement('div');
+                card.className = `card ${isLocked ? 'locked' : (affordable ? 'affordable' : '')}`;
+                if (!isLocked) card.onclick = () => buy(item.id);
+                
+                card.innerHTML = `
+                    <div class="card-meta">
+                        <b>${isLocked ? '???' : item.name + ' [' + currentOwned + ']'}</b>
+                        <span>${isLocked ? 'Keep brewing to unlock' : '+'+item.cps+' CPS per unit'}</span>
+                    </div>
+                    <div class="card-price">${isLocked ? '---' : '☕ ' + cost.toLocaleString()}</div>
+                `;
+                shop.appendChild(card);
             });
         }
 
-        function prestige() {
+        function doPrestige() {
             let pot = Math.floor(Math.sqrt(state.lifetime / 1000000));
-            let diff = pot - state.aroma;
-            if (diff <= 0) {
-                alert("Need more lifetime beans! Reach 1 Million for your first point.");
-                return;
-            }
-            if (confirm(`Reset all beans and shops for ${diff} Aroma Points?`)) {
+            if (pot <= state.aroma) return alert("Earn more Lifetime Beans to gain Aroma Points!");
+            if (confirm("Reset everything for " + (pot - state.aroma) + " Aroma Points?")) {
                 state.aroma = pot;
                 state.beans = 0;
-                state.inventory = {};
-                ITEMS.forEach(i => state.inventory[i.id] = 0);
-                save();
+                DATABASE.forEach(i => state.inventory[i.id] = 0);
                 render();
             }
         }
 
-        // --- Helpers ---
+        // --- Interaction ---
         function setTab(id) {
             document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('pane-' + id).classList.add('active');
             event.target.classList.add('active');
+            render();
         }
 
         function setQty(q) {
-            state.buyQty = q;
-            document.querySelectorAll('#pane-shop .tab-btn').forEach(b => b.classList.remove('active'));
+            state.qty = q;
+            document.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             render();
         }
 
-        function toast() {
-            const t = document.getElementById('toast');
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 1000);
-        }
-
-        document.getElementById('cup-wrapper').addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Extra protection against zoom
-            let clickPwr = (1 + (calculateCps() * 0.05)) * (state.lifetime > 1000 ? 1.2 : 1);
-            state.beans += clickPwr;
-            state.lifetime += clickPwr;
+        document.getElementById('cup-box').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const clickVal = 1 + (calculateCps() * 0.05);
+            state.beans += clickVal;
+            state.lifetime += clickVal;
             
-            const p = document.createElement('div');
-            p.className = 'pop';
-            p.style.left = e.touches[0].clientX + 'px';
-            p.style.top = e.touches[0].clientY + 'px';
-            p.innerText = '☕';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 800);
-            render();
+            const touch = e.touches[0];
+            createParticle(touch.clientX, touch.clientY, Math.floor(clickVal));
+            updateStats();
         });
 
-        function save() { localStorage.setItem('CoffeeEmpire_v5', JSON.stringify(state)); }
-        function load() {
-            const s = localStorage.getItem('CoffeeEmpire_v5');
-            if (s) state = JSON.parse(s);
+        function createParticle(x, y, val) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
+            p.style.setProperty('--ty', '-100px');
+            p.innerText = '☕ +' + val;
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
         }
 
-        // --- Loop ---
-        load();
-        setInterval(() => {
-            let gain = calculateCps() / 10;
-            state.beans += gain;
-            state.lifetime += gain;
-            render();
-        }, 100);
-        setInterval(save, 10000);
-        render();
-
+        init();
     </script>
 </body>
 </html>
