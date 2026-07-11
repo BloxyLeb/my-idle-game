@@ -19,6 +19,7 @@
             min-height: 100vh;
             margin: 0;
             touch-action: manipulation;
+            overflow: hidden; /* Prevents scrollbars during animation */
         }
         #game-container {
             background: #4b3621;
@@ -30,7 +31,6 @@
             border: 2px solid #6f4e37;
         }
 
-        /* The Big Coffee Button */
         #brew-btn {
             width: 160px;
             height: 160px;
@@ -51,7 +51,6 @@
             box-shadow: 0 5px 0 #5a2d0c;
         }
 
-        /* Other Buttons */
         .upgrade-btn {
             width: 100%;
             padding: 12px;
@@ -65,18 +64,21 @@
         }
         .upgrade-btn:active { transform: scale(0.98); }
         
+        /* Updated Floating Text with "Pop" effect */
         .floating-text {
             position: absolute;
             color: #ffd700;
             font-weight: bold;
             pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
             font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: popUp 0.8s ease-out forwards;
             z-index: 100;
         }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-100px); }
+        @keyframes popUp {
+            0% { opacity: 0; transform: translateY(0) scale(0.5); }
+            50% { opacity: 1; transform: translateY(-40px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1); }
         }
     </style>
 </head>
@@ -115,20 +117,20 @@
 
         brewBtn.addEventListener('click', (e) => {
             coffee += clickPower;
-            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
             
+            // Generate coffee-themed floating text
             let div = document.createElement('div');
             div.className = 'floating-text';
-            div.innerText = "+" + clickPower;
-            div.style.left = (x - 10) + 'px';
-            div.style.top = (y - 20) + 'px';
+            div.innerHTML = "☕ +" + clickPower; 
+            div.style.left = (e.clientX - 20) + 'px';
+            div.style.top = (e.clientY - 20) + 'px';
             document.body.appendChild(div);
-            setTimeout(() => div.remove(), 1000);
+            setTimeout(() => div.remove(), 800);
             
             updateUI();
         });
 
+        // Upgrades (Kept your existing logic)
         document.getElementById('hire-barista').addEventListener('click', () => {
             if (coffee >= bCost) {
                 coffee -= bCost;
@@ -137,7 +139,6 @@
                 updateUI();
             }
         });
-
         document.getElementById('buy-machine').addEventListener('click', () => {
             if (coffee >= mCost) {
                 coffee -= mCost;
@@ -146,7 +147,6 @@
                 updateUI();
             }
         });
-
         document.getElementById('buy-grinder').addEventListener('click', () => {
             if (coffee >= gCost) {
                 coffee -= gCost;
