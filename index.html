@@ -9,11 +9,11 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; text-align: center; user-select: none; }
         .container { max-width: 400px; margin: 0 auto; position: relative; }
 
-        /* Settings Modal - Animated */
+        /* Settings Modal */
         #settings-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); 
             z-index: 1000; padding: 20px; box-sizing: border-box; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: 0.3s ease; display: flex;
+            display: flex; opacity: 0; visibility: hidden; transition: 0.3s ease;
         }
         #settings-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { 
@@ -23,56 +23,71 @@
         }
         #settings-overlay.active .modal-content { transform: translateY(0); }
 
-        /* UI Elements */
-        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.1s; outline: none; }
-        #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 20px; margin-bottom: 20px; box-shadow: 0 5px 0 #3db68f; }
-        #clickBtn:active { transform: translateY(4px); box-shadow: none; }
+        /* Main UI */
+        .btn-main { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; margin-bottom: 20px; }
+        .btn-main:active { transform: translateY(4px); box-shadow: none; }
         
-        .upgrade-btn { width: 100%; padding: 14px; margin-bottom: 10px; background: #0f3460; color: white; display: flex; justify-content: space-between; border: 1px solid #1a1a2e; }
-        .upgrade-btn:active { transform: scale(0.98); }
+        /* Upgrades */
+        .upgrade-card { 
+            width: 100%; padding: 14px; margin-bottom: 12px; background: #0f3460; 
+            color: white; border-radius: 8px; cursor: pointer; position: relative; 
+            overflow: hidden; text-align: left; display: flex; justify-content: space-between;
+            border: 1px solid #1a1a2e;
+        }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 6px; background-color: var(--accent); width: 0%; transition: width 0.3s ease; }
         
-        /* Floating Pop Effect */
-        .floating-text { position: fixed; pointer-events: none; font-weight: 900; font-size: 24px; z-index: 9999; text-shadow: 0 0 5px black; animation: popEffect 0.8s ease-out forwards; }
-        @keyframes popEffect { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
-        
+        /* Dashboard */
         .dashboard { background: rgba(15, 52, 96, 0.6); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Idle Tycoon</h1>
-        <button onclick="toggleSettings()" style="background:#2c3e50; color:var(--accent); padding:10px; width:100%; margin-bottom:15px;">⚙️ SETTINGS</button>
         
-        <div id="main-display" style="background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <!-- Settings Button -->
+        <div onclick="toggleSettings()" style="background:#2c3e50; color:var(--accent); padding:10px; border-radius:8px; cursor:pointer; margin-bottom:15px; font-weight:bold;">⚙️ SETTINGS</div>
+        
+        <!-- Stats Display -->
+        <div style="background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
             <div id="money" style="font-size: 32px; color: var(--accent);">$0</div>
-            <div id="mps">Income: 0/sec</div>
+            <div id="mps" style="font-size: 16px; margin-top: 5px;">Income: 0/sec</div>
         </div>
         
-        <button id="clickBtn" onclick="clickMoney(event)">MINE MONEY</button>
+        <div class="btn-main" onclick="clickMoney(event)">MINE MONEY</div>
 
-        <div style="margin: 15px 0; text-align: right; color: var(--accent);">
+        <!-- Buy Max Section -->
+        <div style="margin-bottom: 10px; text-align: right; color: var(--accent);">
             <label style="font-size: 14px; cursor: pointer;">
                 <input type="checkbox" id="buyMaxToggle"> Buy Max
             </label>
         </div>
 
+        <!-- Shop -->
         <div id="shop">
-            <button class="upgrade-btn" onclick="buyUpgrade('intern')">Intern <span id="cost-intern">$10</span></button>
-            <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">$50</span></button>
+            <div class="upgrade-card" onclick="buyUpgrade('intern')">
+                <span>Intern</span> <span id="cost-intern">$10</span>
+                <div class="progress-bar" id="bar-intern"></div>
+            </div>
+            <div class="upgrade-card" onclick="buyUpgrade('auto')">
+                <span>Auto-Miner</span> <span id="cost-auto">$50</span>
+                <div class="progress-bar" id="bar-auto"></div>
+            </div>
         </div>
 
+        <!-- Dashboard -->
         <div class="dashboard">
             <h3>Dashboard</h3>
             <p id="multiplier">Multiplier: 1.0x</p>
-            <button id="prestigeBtn" onclick="prestige()" style="background:#b91c1c; color:white; width:100%; padding:12px;">PRESTIGE (Locked)</button>
+            <div id="prestigeBtn" onclick="prestige()" style="background:#b91c1c; color:white; padding:12px; text-align:center; border-radius:8px; cursor:pointer;">PRESTIGE (Locked)</div>
         </div>
     </div>
 
+    <!-- Settings Modal -->
     <div id="settings-overlay">
         <div class="modal-content">
             <h3>Settings</h3>
             <label><input type="checkbox" id="soundToggle" checked> Enable Sounds</label><br><br>
-            <button onclick="toggleSettings()" style="width:100%; padding:10px; background:var(--accent);">CLOSE</button>
+            <div onclick="toggleSettings()" style="width:100%; padding:10px; background:var(--accent); color:var(--bg); text-align:center; border-radius:8px; cursor:pointer; font-weight:bold;">CLOSE</div>
         </div>
     </div>
 
@@ -94,42 +109,27 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        function spawnFloatingText(event, amount) {
-            let float = document.createElement('div');
-            float.className = 'floating-text';
-            float.innerText = `+$${Math.floor(amount)}`;
-            float.style.left = (event.clientX || 200) + 'px';
-            float.style.top = (event.clientY || 300) + 'px';
-            float.style.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
-            document.body.appendChild(float);
-            setTimeout(() => float.remove(), 1000);
-        }
-
         function clickMoney(event) {
             let income = Math.ceil(perClick * prestigeMultiplier);
             money += income; totalEarnings += income;
-            spawnFloatingText(event, income);
             if(document.getElementById('soundToggle').checked) playClickSound();
             updateDisplay();
         }
 
         function buyUpgrade(type) {
             let isBuyMax = document.getElementById('buyMaxToggle').checked;
-            
             if (isBuyMax) {
                 while (money >= costs[type]) {
                     money -= costs[type];
                     if (type === 'intern') perClick++;
-                    if (type === 'auto') perSecond++;
+                    if (type === 'auto') perSecond += 1;
                     costs[type] = Math.floor(costs[type] * 1.15);
                 }
-            } else {
-                if (money >= costs[type]) {
-                    money -= costs[type];
-                    if (type === 'intern') perClick++;
-                    if (type === 'auto') perSecond++;
-                    costs[type] = Math.floor(costs[type] * 1.15);
-                }
+            } else if (money >= costs[type]) {
+                money -= costs[type];
+                if (type === 'intern') perClick++;
+                if (type === 'auto') perSecond += 1;
+                costs[type] = Math.floor(costs[type] * 1.15);
             }
             updateDisplay();
         }
@@ -138,11 +138,17 @@
             document.getElementById('money').innerText = '$' + Math.floor(money);
             document.getElementById('mps').innerText = `Income: ${Math.floor(perSecond * prestigeMultiplier)}/sec`;
             document.getElementById('multiplier').innerText = `Multiplier: ${prestigeMultiplier.toFixed(1)}x`;
-            for(let t in costs) document.getElementById(`cost-${t}`).innerText = `$${costs[t]}`;
+            
+            for(let t in costs) {
+                document.getElementById(`cost-${t}`).innerText = `$${costs[t]}`;
+                let bar = document.getElementById(`bar-${t}`);
+                bar.style.width = Math.min((money / costs[t]) * 100, 100) + '%';
+            }
             
             let canPrestige = totalEarnings >= 1000000;
             let btn = document.getElementById('prestigeBtn');
-            btn.disabled = !canPrestige;
+            btn.style.opacity = canPrestige ? "1" : "0.5";
+            btn.style.cursor = canPrestige ? "pointer" : "default";
             btn.innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Locked)";
             
             saveGame();
@@ -153,7 +159,7 @@
         }
 
         function prestige() { 
-            if(confirm("Reset all progress for a permanent +0.5x multiplier?")) { 
+            if(totalEarnings >= 1000000 && confirm("Reset all progress for a permanent +0.5x multiplier?")) { 
                 prestigeMultiplier += 0.5;
                 money = 0; perClick = 1; perSecond = 0; totalEarnings = 0; costs = { intern: 10, auto: 50 };
                 saveGame(); location.reload(); 
@@ -170,6 +176,7 @@
                 perClick = saved.perClick; perSecond = saved.perSecond; costs = saved.costs; prestigeMultiplier = saved.prestigeMultiplier || 1.0;
             }
             setInterval(() => { money += (perSecond * prestigeMultiplier); totalEarnings += (perSecond * prestigeMultiplier); updateDisplay(); }, 1000);
+            updateDisplay();
         };
     </script>
 </body>
