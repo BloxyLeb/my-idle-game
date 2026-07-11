@@ -3,49 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Idle Tycoon</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a2e; color: white; text-align: center; margin: 0; padding: 20px; touch-action: manipulation; overflow-x: hidden; }
-        .container { max-width: 400px; margin: 0 auto; position: relative; }
-        h1 { color: #4ecca3; }
-        #stats { font-size: 20px; margin: 15px 0; background: #16213e; padding: 15px; border-radius: 10px; }
-        #money { font-size: 40px; font-weight: bold; color: #4ecca3; }
+        :root { --bg: #1a1a2e; --panel: #16213e; --accent: #4ecca3; --text: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; text-align: center; }
+        .container { max-width: 400px; margin: 0 auto; }
         
-        .button-group { display: flex; flex-direction: column; gap: 10px; }
-        .upgrade-btn { position: relative; overflow: hidden; padding: 15px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #0f3460; color: white; transition: 0.2s; }
-        .progress-bar { position: absolute; bottom: 0; left: 0; height: 5px; background-color: #4ecca3; width: 0%; transition: width 0.3s; }
+        /* Main Stats Display */
+        #main-display { background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #money { font-size: 32px; font-weight: bold; color: var(--accent); }
         
-        #clickBtn { background-color: #4ecca3; color: #1a1a2e; font-weight: bold; padding: 30px; font-size: 20px; border: none; border-radius: 8px; width: 100%; transition: transform 0.1s; }
-        #clickBtn:active { transform: scale(0.90); }
+        /* Dashboard Styling */
+        .dashboard { background: #0f3460; border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
+        .dashboard h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #1a1a2e; padding-bottom: 5px; }
         
-        #achievements { margin-top: 20px; font-size: 14px; color: #aaa; background: #16213e; padding: 10px; border-radius: 8px; }
-        #prestigeBtn { background-color: #b91c1c; color: white; font-weight: bold; padding: 15px; margin-top: 20px; width: 100%; border: none; border-radius: 8px; display: none; }
+        /* Buttons */
+        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; margin-bottom: 20px; }
+        #clickBtn:active { transform: scale(0.98); }
         
-        /* Floating Text Animation */
-        .floating-text { position: absolute; font-weight: bold; color: #fbbf24; font-size: 20px; pointer-events: none; animation: fadeUp 1s ease-out forwards; z-index: 100; text-shadow: 0 0 5px #000; }
-        @keyframes fadeUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
+        .upgrade-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: #1a1a2e; color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background-color: var(--accent); width: 0%; transition: width 0.3s; }
+        
+        #prestigeBtn { width: 100%; padding: 12px; background-color: #b91c1c; color: white; margin-top: 10px; }
+        #prestigeBtn:disabled { background-color: #555; opacity: 0.5; cursor: not-allowed; }
+
+        .floating-text { position: absolute; font-weight: bold; color: #fbbf24; font-size: 20px; pointer-events: none; animation: fadeUp 1s ease-out forwards; z-index: 100; }
+        @keyframes fadeUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Idle Tycoon</h1>
-        <div id="stats">
+        
+        <div id="main-display">
             <div id="money">$0</div>
             <div id="mps">Income: 0/sec</div>
-            <div id="multiplier">Multiplier: 1.0x</div>
         </div>
         
         <button id="clickBtn" onclick="clickMoney(event)">MINE MONEY</button>
 
         <div class="button-group">
-            <button class="upgrade-btn" onclick="buyUpgrade('intern')">Intern <span id="cost-intern">($10)</span><div class="progress-bar" id="bar-intern"></div></button>
-            <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">($50)</span><div class="progress-bar" id="bar-auto"></div></button>
-            <button class="upgrade-btn" onclick="buyUpgrade('factory')">Factory <span id="cost-factory">($500)</span><div class="progress-bar" id="bar-factory"></div></button>
+            <button class="upgrade-btn" onclick="buyUpgrade('intern')">Intern <span id="cost-intern">$10</span><div class="progress-bar" id="bar-intern"></div></button>
+            <button class="upgrade-btn" onclick="buyUpgrade('auto')">Auto-Miner <span id="cost-auto">$50</span><div class="progress-bar" id="bar-auto"></div></button>
+            <button class="upgrade-btn" onclick="buyUpgrade('factory')">Factory <span id="cost-factory">$500</span><div class="progress-bar" id="bar-factory"></div></button>
         </div>
 
-        <button id="prestigeBtn" onclick="prestige()">PRESTIGE (Reset for +0.5x Multiplier)</button>
-        
-        <div id="achievements">
-            <strong>Achievements:</strong> <span id="ach-list">None yet!</span>
+        <div class="dashboard">
+            <h3>Dashboard</h3>
+            <p id="multiplier">Multiplier: 1.0x</p>
+            <p id="ach-list">Achievements: None</p>
+            <hr style="border: 0; border-top: 1px solid #1a1a2e;">
+            <button id="prestigeBtn" onclick="prestige()" disabled>PRESTIGE</button>
+            <div id="prestigeStatus" style="font-size: 11px; margin-top: 5px; color: #aaa;">Prestige unlocks at $1,000,000</div>
         </div>
     </div>
 
@@ -53,16 +63,6 @@
         let money = 0, perClick = 1, perSecond = 0, totalEarnings = 0, prestigeMultiplier = 1.0;
         let costs = { intern: 10, auto: 50, factory: 500 };
         let baseCosts = { intern: 10, auto: 50, factory: 500 };
-
-        window.onload = () => {
-            const saved = localStorage.getItem('idleGameSaveV3');
-            if (saved) {
-                const data = JSON.parse(saved);
-                money = data.money; perClick = data.perClick; perSecond = data.perSecond; 
-                costs = data.costs; totalEarnings = data.totalEarnings; prestigeMultiplier = data.prestigeMultiplier;
-            }
-            updateDisplay();
-        };
 
         function clickMoney(event) {
             let income = Math.ceil(perClick * prestigeMultiplier);
@@ -73,15 +73,14 @@
         }
 
         function spawnFloatingText(event, amount) {
-            let x = event.clientX || (event.touches ? event.touches[0].clientX : 200);
-            let y = event.clientY || (event.touches ? event.touches[0].clientY : 300);
-            let floatText = document.createElement('div');
-            floatText.className = 'floating-text';
-            floatText.innerText = `+$${amount}`;
-            floatText.style.left = (x - 20) + 'px';
-            floatText.style.top = (y - 30) + 'px';
-            document.querySelector('.container').appendChild(floatText);
-            setTimeout(() => { floatText.remove(); }, 1000);
+            let x = event.clientX || 200, y = event.clientY || 300;
+            let float = document.createElement('div');
+            float.className = 'floating-text';
+            float.innerText = `+$${amount}`;
+            float.style.left = (x - 20) + 'px';
+            float.style.top = (y - 30) + 'px';
+            document.querySelector('.container').appendChild(float);
+            setTimeout(() => float.remove(), 1000);
         }
 
         function buyUpgrade(type) {
@@ -99,15 +98,19 @@
             document.getElementById('money').innerText = '$' + Math.floor(money);
             document.getElementById('mps').innerText = `Income: ${Math.floor(perSecond * prestigeMultiplier)}/sec`;
             document.getElementById('multiplier').innerText = `Multiplier: ${prestigeMultiplier.toFixed(1)}x`;
-            document.getElementById('prestigeBtn').innerText = `PRESTIGE (Reset for +0.5x, Next: ${(prestigeMultiplier + 0.5).toFixed(1)}x)`;
 
+            // Update Costs
             for(let type in costs) {
+                document.getElementById(`cost-${type}`).innerText = `$${costs[type]}`;
                 let percent = (money / costs[type]) * 100;
                 document.getElementById(`bar-${type}`).style.width = Math.min(percent, 100) + '%';
-                document.getElementById(`cost-${type}`).innerText = `($${costs[type]})`;
             }
 
-            document.getElementById('prestigeBtn').style.display = (totalEarnings >= 1000000) ? 'block' : 'none';
+            // Update Prestige
+            let canPrestige = totalEarnings >= 1000000;
+            document.getElementById('prestigeBtn').disabled = !canPrestige;
+            document.getElementById('prestigeBtn').innerText = canPrestige ? "PRESTIGE NOW (+0.5x)" : "PRESTIGE (Locked)";
+            
             checkAchievements();
             saveGame();
         }
@@ -117,28 +120,38 @@
             if (totalEarnings >= 1000) list.push("Novice");
             if (totalEarnings >= 100000) list.push("Rich");
             if (totalEarnings >= 1000000) list.push("Tycoon");
-            document.getElementById('ach-list').innerText = list.length > 0 ? list.join(', ') : "None yet!";
+            document.getElementById('ach-list').innerText = "Achievements: " + (list.join(', ') || "None");
         }
 
         function prestige() {
-            if(confirm("Prestige? Reset all money/upgrades for a +0.5x permanent multiplier!")) {
+            if(confirm("Reset progress for permanent +0.5x multiplier?")) {
                 prestigeMultiplier += 0.5;
                 money = 0; perClick = 1; perSecond = 0;
                 costs = JSON.parse(JSON.stringify(baseCosts));
+                totalEarnings = 0;
                 saveGame();
                 location.reload();
             }
         }
 
         function saveGame() {
-            localStorage.setItem('idleGameSaveV3', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
+            localStorage.setItem('idleGameSaveV5', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
         }
 
-        setInterval(() => {
-            money += (perSecond * prestigeMultiplier);
-            totalEarnings += (perSecond * prestigeMultiplier);
+        window.onload = () => {
+            const saved = localStorage.getItem('idleGameSaveV5');
+            if (saved) {
+                const data = JSON.parse(saved);
+                money = data.money; perClick = data.perClick; perSecond = data.perSecond; 
+                costs = data.costs; totalEarnings = data.totalEarnings; prestigeMultiplier = data.prestigeMultiplier;
+            }
             updateDisplay();
-        }, 1000);
+            setInterval(() => {
+                money += (perSecond * prestigeMultiplier);
+                totalEarnings += (perSecond * prestigeMultiplier);
+                updateDisplay();
+            }, 1000);
+        };
     </script>
 </body>
 </html>
