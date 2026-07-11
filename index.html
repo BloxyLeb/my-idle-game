@@ -2,283 +2,435 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brewmaster: Coffee Empire</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coffee Tycoon: Ultimate Brew</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;600;800&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --espresso: #2C1B12;
-            --bean: #4E342E;
-            --crema: #D7CCC8;
-            --latte: #F5F5DC;
-            --accent: #FF7043;
-            --steam: rgba(255, 255, 255, 0.3);
+            --primary: #6F4E37;
+            --primary-light: #A67B5B;
+            --dark: #21130d;
+            --accent: #FFAB40;
+            --bg: #1a1a1a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --text: #f5f5f5;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--latte);
-            color: var(--espresso);
-            display: flex;
-            height: 100vh;
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- Left Side: The Brewing Station --- */
-        #main-area {
-            flex: 2;
+        /* --- Header & Stats --- */
+        header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, #2c1b12, transparent);
+        }
+
+        #bean-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(255, 171, 64, 0.3);
+        }
+
+        .cps-text { opacity: 0.7; font-size: 0.9rem; margin-top: 5px; }
+
+        /* --- Main Game Layout --- */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        #clicker-section {
+            flex: 1.2;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #efebe9 0%, #d7ccc8 100%);
             position: relative;
-            border-right: 4px solid var(--espresso);
         }
 
-        #stats-panel {
-            position: absolute;
-            top: 20px;
-            text-align: center;
-        }
-
-        #coffee-count {
-            font-size: 3rem;
-            font-family: 'Playfair Display', serif;
-            color: var(--espresso);
-        }
-
-        .cup-container {
+        /* The Cup */
+        .cup-wrapper {
             position: relative;
             cursor: pointer;
-            transition: transform 0.1s;
-            user-select: none;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
         }
 
-        .cup-container:active { transform: scale(0.95); }
+        .cup-wrapper:active { transform: scale(0.92); }
+        
+        #main-cup {
+            width: 280px;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+        }
 
-        #cup-svg { width: 250px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2)); }
-
-        /* Temperature Mechanic */
-        #temp-gauge {
-            width: 200px;
-            height: 20px;
-            background: #ccc;
-            border-radius: 10px;
-            margin-top: 30px;
-            position: relative;
+        /* Temp Gauge */
+        .temp-container {
+            width: 250px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        .gauge-bar {
+            height: 12px;
+            background: #333;
+            border-radius: 20px;
             overflow: hidden;
-            border: 2px solid var(--espresso);
+            border: 2px solid #444;
+            position: relative;
         }
-
         #temp-fill {
             height: 100%;
             width: 50%;
-            background: linear-gradient(to right, #2196F3, #FFEB3B, #F44336);
+            background: linear-gradient(90deg, #4facfe 0%, #ff0844 100%);
             transition: width 0.3s;
         }
-
-        .temp-label { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
-
-        /* --- Right Side: The Coffee Shop --- */
-        #shop-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: var(--latte);
+        .temp-target {
+            position: absolute;
+            left: 75%; width: 15%; height: 100%;
+            background: rgba(255,255,255,0.3);
+            border-left: 2px solid white;
+            border-right: 2px solid white;
         }
 
-        h2 { font-family: 'Playfair Display', serif; margin-bottom: 20px; border-bottom: 2px solid var(--espresso); }
+        /* --- UI Panels (Shop/Stats/etc) --- */
+        #ui-section {
+            flex: 1;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+        }
 
-        .item {
-            background: white;
+        .tabs {
+            display: flex;
+            background: rgba(0,0,0,0.2);
+        }
+        .tab {
+            flex: 1;
             padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom: 3px solid var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .panel {
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .panel.active { display: flex; }
+
+        /* Shop Cards */
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: 0.3s;
+            transition: 0.2s;
             cursor: pointer;
         }
+        .card:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+        .card.disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        
+        .card-info b { display: block; font-size: 1rem; color: var(--accent); }
+        .card-info span { font-size: 0.75rem; opacity: 0.6; }
+        .price-tag { font-weight: 800; color: #fff; }
 
-        .item:hover { transform: translateX(-5px); box-shadow: 0 6px 10px rgba(0,0,0,0.1); }
-        .item.disabled { opacity: 0.5; cursor: not-allowed; }
+        /* Achievements */
+        .ach-card {
+            padding: 10px;
+            border-radius: 8px;
+            background: #2c1b12;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            border-left: 4px solid #444;
+        }
+        .ach-card.unlocked { border-left-color: var(--accent); background: #3d2b1f; }
 
-        .item-info b { display: block; font-size: 1.1rem; }
-        .item-info span { font-size: 0.85rem; color: #666; }
-
-        .price { font-weight: 600; color: var(--accent); }
-
-        /* Notifications */
-        .click-pop {
+        /* Floating Coffee Emoji */
+        .particle {
             position: absolute;
-            color: var(--accent);
-            font-weight: 700;
             pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
+            animation: float-particle 1s ease-out forwards;
+            font-size: 24px;
+            z-index: 100;
         }
 
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-100px); }
+        @keyframes float-particle {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-150px) rotate(20deg) scale(1.5); opacity: 0; }
         }
 
-        #bonus-tag {
-            background: var(--accent);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            display: none;
+        /* Mobile Adjustments */
+        @media (max-width: 850px) {
+            main { flex-direction: column; }
+            #ui-section { border-left: none; border-top: 1px solid rgba(255,255,255,0.1); }
+            #main-cup { width: 180px; }
+            #clicker-section { padding: 40px 0; }
         }
+
+        /* Settings Buttons */
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .btn-danger { background: #ff4444; color: white; }
     </style>
 </head>
 <body>
 
-    <div id="main-area">
-        <div id="stats-panel">
-            <div id="coffee-count">0 Beans</div>
-            <div id="cps-display">0 beans per second</div>
-            <div id="bonus-tag">PERFECT TEMP: 2x CLICK!</div>
-        </div>
+    <header>
+        <div id="bean-display">0 Beans</div>
+        <div class="cps-text">Production: <span id="cps-val">0</span> per sec</div>
+    </header>
 
-        <div class="cup-container" id="cup">
-            <!-- Simple Coffee Cup SVG -->
-            <svg id="cup-svg" viewBox="0 0 100 100">
-                <path d="M20,30 Q20,80 50,80 Q80,80 80,30 Z" fill="#fff" stroke="#2C1B12" stroke-width="2"/>
-                <path d="M25,35 Q25,75 50,75 Q75,75 75,35 Z" fill="#4E342E" />
-                <path d="M80,40 Q95,40 95,55 Q95,70 80,70" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            </svg>
-        </div>
+    <main>
+        <section id="clicker-section">
+            <div class="cup-wrapper" id="cup-btn">
+                <svg id="main-cup" viewBox="0 0 100 100">
+                    <path d="M20,40 Q20,90 50,90 Q80,90 80,40" fill="none" stroke="#fff" stroke-width="2"/>
+                    <path d="M22,42 Q22,88 50,88 Q78,88 78,42 Z" fill="#3d2b1f"/>
+                    <path d="M80,50 Q95,50 95,65 Q95,80 80,80" fill="none" stroke="#fff" stroke-width="4"/>
+                    <rect x="20" y="35" width="60" height="8" rx="4" fill="#fff"/>
+                </svg>
+            </div>
+            
+            <div class="temp-container">
+                <div class="gauge-bar">
+                    <div class="temp-target"></div>
+                    <div id="temp-fill"></div>
+                </div>
+                <div class="cps-text" style="margin-top:10px">Temp: <span id="temp-val">50</span>°C</div>
+                <div id="multiplier-tag" style="color:var(--accent); font-weight:bold; visibility:hidden">🔥 PERFECT BREW: 2x CLICK</div>
+            </div>
+        </section>
 
-        <div id="temp-gauge"><div id="temp-fill"></div></div>
-        <div class="temp-label">Temperature: <span id="temp-val">50</span>°C (Ideal: 85-95°C)</div>
-    </div>
+        <section id="ui-section">
+            <div class="tabs">
+                <div class="tab active" onclick="showPanel('shop')">Shop</div>
+                <div class="tab" onclick="showPanel('achievements')">Awards</div>
+                <div class="tab" onclick="showPanel('settings')">Settings</div>
+            </div>
 
-    <div id="shop-area">
-        <h2>Upgrades & Baristas</h2>
-        <div id="shop-list">
-            <!-- Upgrades will be injected here -->
-        </div>
-    </div>
+            <!-- Shop Panel -->
+            <div id="shop" class="panel active"></div>
+
+            <!-- Achievements Panel -->
+            <div id="achievements" class="panel">
+                <h3>Milestones</h3>
+                <div id="ach-list"></div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div id="settings" class="panel">
+                <h3>Settings</h3>
+                <button class="btn" onclick="saveGame()">Force Save</button>
+                <button class="btn btn-danger" onclick="resetGame()">Reset Progress</button>
+                <p style="font-size: 0.7rem; margin-top: 20px; opacity: 0.5;">Brewmaster Tycoon v2.0<br>Made for GitHub Index</p>
+            </div>
+        </section>
+    </main>
 
     <script>
-        // Game State
-        let beans = 0;
-        let totalBeans = 0;
-        let temp = 50;
-        let clickValue = 1;
-        let autoValue = 0;
+        // --- Game Config & Data ---
+        let state = {
+            beans: 0,
+            totalBeans: 0,
+            cps: 0,
+            temp: 50,
+            inventory: {},
+            achievements: []
+        };
 
-        const shopItems = [
-            { id: 'barista', name: 'Rookie Barista', cost: 15, baseCps: 1, desc: 'Brewing manually is hard. Let them help.' },
-            { id: 'press', name: 'French Press', cost: 100, baseCps: 5, desc: 'Coarse grounds, better flow.' },
-            { id: 'espresso_machine', name: 'Vapor-9000', cost: 500, baseCps: 20, desc: 'High pressure, high reward.' },
-            { id: 'roastery', name: 'Local Roastery', cost: 2000, baseCps: 80, desc: 'Fresh beans every hour.' },
-            { id: 'plantation', name: 'Coffee Plantation', cost: 10000, baseCps: 300, desc: 'Direct from the source.' }
+        const items = [
+            { id: 'intern', name: 'Coffee Intern', cost: 15, cps: 0.5, desc: 'Taps the cup for you.' },
+            { id: 'press', name: 'French Press', cost: 100, cps: 3, desc: 'More caffeine, more beans.' },
+            { id: 'machine', name: 'Espresso Pro', cost: 500, cps: 12, desc: 'Professional grade steam.' },
+            { id: 'truck', name: 'Coffee Truck', cost: 2500, cps: 45, desc: 'Sell on the move.' },
+            { id: 'factory', name: 'Roast Factory', cost: 12000, cps: 150, desc: 'Industrial scale brewing.' }
         ];
 
-        let inventory = { barista: 0, press: 0, espresso_machine: 0, roastery: 0, plantation: 0 };
+        const milestones = [
+            { id: 'first_100', name: 'First Sip', req: 100, text: 'Collect 100 total beans' },
+            { id: 'thousand', name: 'Bean King', req: 1000, text: 'Collect 1,000 total beans' },
+            { id: 'temp_master', name: 'Master Brewer', req: 5000, text: 'Reach 5,000 beans' }
+        ];
 
-        // DOM Elements
-        const cup = document.getElementById('cup');
-        const beanDisplay = document.getElementById('coffee-count');
-        const cpsDisplay = document.getElementById('cps-display');
-        const tempFill = document.getElementById('temp-fill');
-        const tempValDisplay = document.getElementById('temp-val');
-        const bonusTag = document.getElementById('bonus-tag');
-        const shopList = document.getElementById('shop-list');
+        // --- Initialization ---
+        function init() {
+            const saved = localStorage.getItem('coffeeClickerSave');
+            if (saved) state = JSON.parse(saved);
+            
+            items.forEach(item => {
+                if (!state.inventory[item.id]) state.inventory[item.id] = 0;
+            });
 
-        // Logic: Click
-        cup.addEventListener('mousedown', (e) => {
-            let multiplier = (temp >= 85 && temp <= 95) ? 2 : 1;
-            let earned = clickValue * multiplier;
-            
-            beans += earned;
-            totalBeans += earned;
-            
-            // Heat up on click
-            temp = Math.min(100, temp + 1.5);
-            
-            spawnPop(e.pageX, e.pageY, `+${earned}`);
+            renderShop();
             updateUI();
-        });
+            gameLoop();
+        }
 
-        // Logic: Passive Temperature Cooling
-        setInterval(() => {
-            if (temp > 20) temp -= 0.5;
+        // --- Core Logic ---
+        function gameLoop() {
+            setInterval(() => {
+                // Production
+                if (state.cps > 0) {
+                    addBeans(state.cps / 10);
+                }
+
+                // Temp Cooling
+                if (state.temp > 20) state.temp -= 0.2;
+                
+                checkAchievements();
+                updateUI();
+            }, 100);
+
+            // Auto-save every 30 seconds
+            setInterval(saveGame, 30000);
+        }
+
+        function addBeans(amt) {
+            state.beans += amt;
+            state.totalBeans += amt;
+        }
+
+        function handleCupClick(e) {
+            const isPerfect = state.temp >= 75 && state.temp <= 90;
+            const power = isPerfect ? 2 : 1;
             
-            // Passive production
-            if (autoValue > 0) {
-                beans += (autoValue / 10);
-                totalBeans += (autoValue / 10);
-            }
+            addBeans(power);
+            state.temp = Math.min(100, state.temp + 1.2);
             
+            spawnParticle(e.clientX, e.clientY);
             updateUI();
-        }, 100);
+        }
 
+        // --- UI Functions ---
         function updateUI() {
-            beanDisplay.innerText = `${Math.floor(beans)} Beans`;
-            cpsDisplay.innerText = `${autoValue.toFixed(1)} beans per second`;
-            tempFill.style.width = `${temp}%`;
-            tempValDisplay.innerText = Math.floor(temp);
+            document.getElementById('bean-display').innerText = `${Math.floor(state.beans).toLocaleString()} Beans`;
+            document.getElementById('cps-val').innerText = state.cps.toFixed(1);
             
-            // Bonus Highlight
-            if (temp >= 85 && temp <= 95) {
-                bonusTag.style.display = 'inline-block';
-                tempFill.style.background = '#4CAF50';
-            } else {
-                bonusTag.style.display = 'none';
-                tempFill.style.background = 'linear-gradient(to right, #2196F3, #FFEB3B, #F44336)';
-            }
+            // Temp UI
+            const fill = document.getElementById('temp-fill');
+            fill.style.width = `${state.temp}%`;
+            document.getElementById('temp-val').innerText = Math.floor(state.temp);
+            
+            const isPerfect = state.temp >= 75 && state.temp <= 90;
+            document.getElementById('multiplier-tag').style.visibility = isPerfect ? 'visible' : 'hidden';
+            fill.style.filter = isPerfect ? 'hue-rotate(90deg) brightness(1.5)' : 'none';
 
             renderShop();
         }
 
         function renderShop() {
-            shopList.innerHTML = '';
-            shopItems.forEach(item => {
-                const canAfford = beans >= item.cost;
-                const div = document.createElement('div');
-                div.className = `item ${canAfford ? '' : 'disabled'}`;
-                div.innerHTML = `
-                    <div class="item-info">
-                        <b>${item.name} (${inventory[item.id]})</b>
-                        <span>${item.desc}</span>
+            const shop = document.getElementById('shop');
+            shop.innerHTML = '';
+            items.forEach(item => {
+                const count = state.inventory[item.id];
+                const currentCost = Math.floor(item.cost * Math.pow(1.15, count));
+                const canAfford = state.beans >= currentCost;
+
+                const card = document.createElement('div');
+                card.className = `card ${canAfford ? '' : 'disabled'}`;
+                card.onclick = () => buyItem(item.id, currentCost, item.cps);
+                card.innerHTML = `
+                    <div class="card-info">
+                        <b>${item.name} (${count})</b>
+                        <span>+${item.cps} CPS • ${item.desc}</span>
                     </div>
-                    <div class="price">${Math.floor(item.cost)} beans</div>
+                    <div class="price-tag">☕ ${currentCost}</div>
                 `;
-                div.onclick = () => buyItem(item);
-                shopList.appendChild(div);
+                shop.appendChild(card);
             });
         }
 
-        function buyItem(item) {
-            if (beans >= item.cost) {
-                beans -= item.cost;
-                inventory[item.id]++;
-                autoValue += item.baseCps;
-                item.cost *= 1.15; // Price inflation
+        function buyItem(id, cost, cpsGain) {
+            if (state.beans >= cost) {
+                state.beans -= cost;
+                state.inventory[id]++;
+                state.cps += cpsGain;
                 updateUI();
             }
         }
 
-        function spawnPop(x, y, text) {
-            const pop = document.createElement('div');
-            pop.className = 'click-pop';
-            pop.style.left = x + 'px';
-            pop.style.top = y + 'px';
-            pop.innerText = text;
-            document.body.appendChild(pop);
-            setTimeout(() => pop.remove(), 1000);
+        function checkAchievements() {
+            const list = document.getElementById('ach-list');
+            list.innerHTML = '';
+            milestones.forEach(m => {
+                const unlocked = state.totalBeans >= m.req;
+                const div = document.createElement('div');
+                div.className = `ach-card ${unlocked ? 'unlocked' : ''}`;
+                div.innerHTML = `<b>${unlocked ? '✅' : '🔒'} ${m.name}</b><br>${m.text}`;
+                list.appendChild(div);
+            });
         }
 
-        // Initialize
-        renderShop();
+        function spawnParticle(x, y) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = `${x}px`;
+            p.style.top = `${y}px`;
+            p.innerText = '☕';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 1000);
+        }
+
+        function showPanel(id) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function saveGame() {
+            localStorage.setItem('coffeeClickerSave', JSON.stringify(state));
+        }
+
+        function resetGame() {
+            if(confirm("Are you sure? You will lose all your beans!")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // Listeners
+        document.getElementById('cup-btn').addEventListener('mousedown', handleCupClick);
+        
+        // Start
+        init();
     </script>
 </body>
 </html>
