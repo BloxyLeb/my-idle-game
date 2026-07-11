@@ -6,35 +6,38 @@
     <title>Idle Tycoon</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --accent: #4ecca3; --text: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; text-align: center; }
-        .container { max-width: 400px; margin: 0 auto; }
+        /* Office Themes */
+        .theme-basement { background-color: #1a1a2e; }
+        .theme-office { background-color: #2c3e50; }
+        .theme-corporate { background-color: #34495e; }
+        .theme-penthouse { background-color: #2c3e50; background: linear-gradient(135deg, #2c3e50, #1a1a2e); }
+
+        body { font-family: 'Segoe UI', sans-serif; transition: background 1s ease; color: var(--text); margin: 0; padding: 15px; text-align: center; overflow-x: hidden; }
+        .container { max-width: 400px; margin: 0 auto; position: relative; }
         
-        /* Main Stats Display */
-        #main-display { background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #main-display { background: rgba(22, 33, 62, 0.8); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #money { font-size: 32px; font-weight: bold; color: var(--accent); }
         
-        /* Dashboard Styling */
-        .dashboard { background: #0f3460; border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
+        .dashboard { background: rgba(15, 52, 96, 0.8); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
         .dashboard h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #1a1a2e; padding-bottom: 5px; }
         
-        /* Buttons */
         button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; margin-bottom: 20px; }
         #clickBtn:active { transform: scale(0.98); }
         
-        .upgrade-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: #1a1a2e; color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+        .upgrade-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(26, 26, 46, 0.8); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
         .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background-color: var(--accent); width: 0%; transition: width 0.3s; }
         
         #prestigeBtn { width: 100%; padding: 12px; background-color: #b91c1c; color: white; margin-top: 10px; }
         #prestigeBtn:disabled { background-color: #555; opacity: 0.5; cursor: not-allowed; }
 
-        .floating-text { position: absolute; font-weight: bold; color: #fbbf24; font-size: 20px; pointer-events: none; animation: fadeUp 1s ease-out forwards; z-index: 100; }
-        @keyframes fadeUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
+        .confetti { position: absolute; width: 10px; height: 10px; background: #fbbf24; animation: fall 2s linear forwards; pointer-events: none; }
+        @keyframes fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(500px) rotate(720deg); opacity: 0; } }
     </style>
 </head>
-<body>
+<body class="theme-basement">
     <div class="container">
-        <h1>Idle Tycoon</h1>
+        <h1 id="office-title">Basement Office</h1>
         
         <div id="main-display">
             <div id="money">$0</div>
@@ -53,7 +56,6 @@
             <h3>Dashboard</h3>
             <p id="multiplier">Multiplier: 1.0x</p>
             <p id="ach-list">Achievements: None</p>
-            <hr style="border: 0; border-top: 1px solid #1a1a2e;">
             <button id="prestigeBtn" onclick="prestige()" disabled>PRESTIGE</button>
             <div id="prestigeStatus" style="font-size: 11px; margin-top: 5px; color: #aaa;">Prestige unlocks at $1,000,000</div>
         </div>
@@ -64,23 +66,31 @@
         let costs = { intern: 10, auto: 50, factory: 500 };
         let baseCosts = { intern: 10, auto: 50, factory: 500 };
 
+        function triggerConfetti() {
+            for (let i = 0; i < 30; i++) {
+                let c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + '%';
+                c.style.animationDelay = Math.random() + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 2000);
+            }
+        }
+
+        function updateOfficeTheme() {
+            let body = document.body;
+            let title = document.getElementById('office-title');
+            if (totalEarnings > 1000000) { body.className = 'theme-penthouse'; title.innerText = "Penthouse Office"; }
+            else if (totalEarnings > 100000) { body.className = 'theme-corporate'; title.innerText = "Corporate HQ"; }
+            else if (totalEarnings > 10000) { body.className = 'theme-office'; title.innerText = "Modern Office"; }
+            else { body.className = 'theme-basement'; title.innerText = "Basement Office"; }
+        }
+
         function clickMoney(event) {
             let income = Math.ceil(perClick * prestigeMultiplier);
             money += income;
             totalEarnings += income;
-            spawnFloatingText(event, income);
             updateDisplay();
-        }
-
-        function spawnFloatingText(event, amount) {
-            let x = event.clientX || 200, y = event.clientY || 300;
-            let float = document.createElement('div');
-            float.className = 'floating-text';
-            float.innerText = `+$${amount}`;
-            float.style.left = (x - 20) + 'px';
-            float.style.top = (y - 30) + 'px';
-            document.querySelector('.container').appendChild(float);
-            setTimeout(() => float.remove(), 1000);
         }
 
         function buyUpgrade(type) {
@@ -99,18 +109,20 @@
             document.getElementById('mps').innerText = `Income: ${Math.floor(perSecond * prestigeMultiplier)}/sec`;
             document.getElementById('multiplier').innerText = `Multiplier: ${prestigeMultiplier.toFixed(1)}x`;
 
-            // Update Costs
             for(let type in costs) {
                 document.getElementById(`cost-${type}`).innerText = `$${costs[type]}`;
                 let percent = (money / costs[type]) * 100;
                 document.getElementById(`bar-${type}`).style.width = Math.min(percent, 100) + '%';
             }
 
-            // Update Prestige
+            // Check Milestones for Confetti
+            if (totalEarnings > 10000 && totalEarnings < 10100) triggerConfetti();
+
             let canPrestige = totalEarnings >= 1000000;
             document.getElementById('prestigeBtn').disabled = !canPrestige;
-            document.getElementById('prestigeBtn').innerText = canPrestige ? "PRESTIGE NOW (+0.5x)" : "PRESTIGE (Locked)";
+            document.getElementById('prestigeBtn').innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Locked)";
             
+            updateOfficeTheme();
             checkAchievements();
             saveGame();
         }
@@ -135,11 +147,11 @@
         }
 
         function saveGame() {
-            localStorage.setItem('idleGameSaveV5', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
+            localStorage.setItem('idleGameSaveV6', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
         }
 
         window.onload = () => {
-            const saved = localStorage.getItem('idleGameSaveV5');
+            const saved = localStorage.getItem('idleGameSaveV6');
             if (saved) {
                 const data = JSON.parse(saved);
                 money = data.money; perClick = data.perClick; perSecond = data.perSecond; 
