@@ -6,32 +6,32 @@
     <title>Idle Tycoon</title>
     <style>
         :root { --bg: #1a1a2e; --panel: #16213e; --accent: #4ecca3; --text: #ffffff; }
-        /* Office Themes */
         .theme-basement { background-color: #1a1a2e; }
         .theme-office { background-color: #2c3e50; }
         .theme-corporate { background-color: #34495e; }
         .theme-penthouse { background-color: #2c3e50; background: linear-gradient(135deg, #2c3e50, #1a1a2e); }
 
-        body { font-family: 'Segoe UI', sans-serif; transition: background 1s ease; color: var(--text); margin: 0; padding: 15px; text-align: center; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; transition: background 1s ease; color: var(--text); margin: 0; padding: 15px; text-align: center; overflow-x: hidden; user-select: none; }
         .container { max-width: 400px; margin: 0 auto; position: relative; }
         
         #main-display { background: rgba(22, 33, 62, 0.8); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #money { font-size: 32px; font-weight: bold; color: var(--accent); }
         
-        .dashboard { background: rgba(15, 52, 96, 0.8); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
-        .dashboard h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #1a1a2e; padding-bottom: 5px; }
+        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.15s; outline: none; }
+        #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; margin-bottom: 20px; box-shadow: 0 4px 0 #3db68f; }
+        #clickBtn:active { transform: translateY(4px); box-shadow: none; }
         
-        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        #clickBtn { background-color: var(--accent); color: var(--bg); padding: 20px; width: 100%; font-size: 18px; margin-bottom: 20px; }
-        #clickBtn:active { transform: scale(0.98); }
-        
-        .upgrade-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(26, 26, 46, 0.8); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+        .upgrade-btn { width: 100%; padding: 14px; margin-bottom: 10px; background: rgba(26, 26, 46, 0.9); color: white; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; border: 1px solid #2c3e50; }
+        .upgrade-btn:hover { background: #16213e; transform: scale(1.02); }
+        .upgrade-btn:active { transform: scale(0.98); }
         .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background-color: var(--accent); width: 0%; transition: width 0.3s; }
+        
+        .dashboard { background: rgba(15, 52, 96, 0.8); border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
+        h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #1a1a2e; padding-bottom: 5px; }
         
         #prestigeBtn { width: 100%; padding: 12px; background-color: #b91c1c; color: white; margin-top: 10px; }
         #prestigeBtn:disabled { background-color: #555; opacity: 0.5; cursor: not-allowed; }
 
-        /* Animations */
         .confetti { position: absolute; width: 10px; height: 10px; background: #fbbf24; animation: fall 2s linear forwards; pointer-events: none; }
         @keyframes fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(500px) rotate(720deg); opacity: 0; } }
         
@@ -42,7 +42,6 @@
 <body class="theme-basement">
     <div class="container">
         <h1 id="office-title">Basement Office</h1>
-        
         <div id="main-display">
             <div id="money">$0</div>
             <div id="mps">Income: 0/sec</div>
@@ -61,50 +60,41 @@
             <p id="multiplier">Multiplier: 1.0x</p>
             <p id="ach-list">Achievements: None</p>
             <button id="prestigeBtn" onclick="prestige()" disabled>PRESTIGE</button>
-            <div id="prestigeStatus" style="font-size: 11px; margin-top: 5px; color: #aaa;">Prestige unlocks at $1,000,000</div>
+            <div style="font-size: 11px; margin-top: 5px; color: #aaa;">Prestige unlocks at $1,000,000</div>
         </div>
     </div>
 
     <script>
         let money = 0, perClick = 1, perSecond = 0, totalEarnings = 0, prestigeMultiplier = 1.0;
         let costs = { intern: 10, auto: 50, factory: 500 };
-        let baseCosts = { intern: 10, auto: 50, factory: 500 };
+        const baseCosts = { intern: 10, auto: 50, factory: 500 };
 
-        function triggerConfetti() {
-            for (let i = 0; i < 30; i++) {
-                let c = document.createElement('div');
-                c.className = 'confetti';
-                c.style.left = Math.random() * 100 + '%';
-                c.style.animationDelay = Math.random() + 's';
-                document.body.appendChild(c);
-                setTimeout(() => c.remove(), 2000);
-            }
+        // Simple Synth for "Sound"
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playClickSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.value = 800; gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
         function spawnFloatingText(event, amount) {
-            let x = event.clientX || 200, y = event.clientY || 300;
             let float = document.createElement('div');
             float.className = 'floating-text';
             float.innerText = `+$${amount}`;
-            float.style.left = (x - 20) + 'px';
-            float.style.top = (y - 30) + 'px';
+            float.style.left = (event.clientX || 200) + 'px';
+            float.style.top = (event.clientY || 300) + 'px';
             document.querySelector('.container').appendChild(float);
             setTimeout(() => float.remove(), 1000);
         }
 
-        function updateOfficeTheme() {
-            let body = document.body;
-            let title = document.getElementById('office-title');
-            if (totalEarnings > 1000000) { body.className = 'theme-penthouse'; title.innerText = "Penthouse Office"; }
-            else if (totalEarnings > 100000) { body.className = 'theme-corporate'; title.innerText = "Corporate HQ"; }
-            else if (totalEarnings > 10000) { body.className = 'theme-office'; title.innerText = "Modern Office"; }
-            else { body.className = 'theme-basement'; title.innerText = "Basement Office"; }
-        }
-
         function clickMoney(event) {
             let income = Math.ceil(perClick * prestigeMultiplier);
-            money += income;
-            totalEarnings += income;
+            money += income; totalEarnings += income;
+            playClickSound();
             spawnFloatingText(event, income);
             updateDisplay();
         }
@@ -115,7 +105,7 @@
                 if (type === 'intern') perClick += 1;
                 if (type === 'auto') perSecond += 1;
                 if (type === 'factory') perSecond += 10;
-                costs[type] = Math.floor(costs[type] * 1.15);
+                costs[type] = Math.floor(costs[type] * 1.15); // Rebalanced scaling
                 updateDisplay();
             }
         }
@@ -127,57 +117,42 @@
 
             for(let type in costs) {
                 document.getElementById(`cost-${type}`).innerText = `$${costs[type]}`;
-                let percent = (money / costs[type]) * 100;
-                document.getElementById(`bar-${type}`).style.width = Math.min(percent, 100) + '%';
+                document.getElementById(`bar-${type}`).style.width = Math.min((money / costs[type]) * 100, 100) + '%';
             }
-
-            if (totalEarnings > 10000 && totalEarnings < 10100) triggerConfetti();
 
             let canPrestige = totalEarnings >= 1000000;
             document.getElementById('prestigeBtn').disabled = !canPrestige;
-            document.getElementById('prestigeBtn').innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Locked)";
             
-            updateOfficeTheme();
-            checkAchievements();
+            let body = document.body;
+            let title = document.getElementById('office-title');
+            if (totalEarnings > 1000000) { body.className = 'theme-penthouse'; title.innerText = "Penthouse Office"; }
+            else if (totalEarnings > 100000) { body.className = 'theme-corporate'; title.innerText = "Corporate HQ"; }
+            else if (totalEarnings > 10000) { body.className = 'theme-office'; title.innerText = "Modern Office"; }
+            
             saveGame();
         }
 
-        function checkAchievements() {
-            let list = [];
-            if (totalEarnings >= 1000) list.push("Novice");
-            if (totalEarnings >= 100000) list.push("Rich");
-            if (totalEarnings >= 1000000) list.push("Tycoon");
-            document.getElementById('ach-list').innerText = "Achievements: " + (list.join(', ') || "None");
-        }
-
         function prestige() {
-            if(confirm("Reset progress for permanent +0.5x multiplier?")) {
+            if(confirm("Reset for +0.5x permanent boost?")) {
                 prestigeMultiplier += 0.5;
-                money = 0; perClick = 1; perSecond = 0;
+                money = 0; perClick = 1; perSecond = 0; totalEarnings = 0;
                 costs = JSON.parse(JSON.stringify(baseCosts));
-                totalEarnings = 0;
-                saveGame();
                 location.reload();
             }
         }
 
         function saveGame() {
-            localStorage.setItem('idleGameSaveV6', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
+            localStorage.setItem('idleGameSaveV7', JSON.stringify({ money, perClick, perSecond, costs, totalEarnings, prestigeMultiplier }));
         }
 
         window.onload = () => {
-            const saved = localStorage.getItem('idleGameSaveV6');
+            const saved = localStorage.getItem('idleGameSaveV7');
             if (saved) {
                 const data = JSON.parse(saved);
                 money = data.money; perClick = data.perClick; perSecond = data.perSecond; 
                 costs = data.costs; totalEarnings = data.totalEarnings; prestigeMultiplier = data.prestigeMultiplier;
             }
-            updateDisplay();
-            setInterval(() => {
-                money += (perSecond * prestigeMultiplier);
-                totalEarnings += (perSecond * prestigeMultiplier);
-                updateDisplay();
-            }, 1000);
+            setInterval(() => { money += (perSecond * prestigeMultiplier); totalEarnings += (perSecond * prestigeMultiplier); updateDisplay(); }, 1000);
         };
     </script>
 </body>
