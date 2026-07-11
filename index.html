@@ -2,193 +2,283 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Coffee Tycoon: Grand Opening</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brewmaster: Coffee Empire</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* Modern Industrial Coffee Shop Theme */
         :root {
-            --bg-color: #1a1a1a;
-            --panel-color: #2d2d2d;
-            --accent-gold: #ffc107;
-            --coffee-brown: #6d4c41;
-            --text-color: #ffffff;
+            --espresso: #2C1B12;
+            --bean: #4E342E;
+            --crema: #D7CCC8;
+            --latte: #F5F5DC;
+            --accent: #FF7043;
+            --steam: rgba(255, 255, 255, 0.3);
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--latte);
+            color: var(--espresso);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Left Side: The Brewing Station --- */
+        #main-area {
+            flex: 2;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            justify-content: center;
+            background: linear-gradient(135deg, #efebe9 0%, #d7ccc8 100%);
+            position: relative;
+            border-right: 4px solid var(--espresso);
         }
 
-        #news-ticker {
-            width: 100%;
-            background: #000;
-            color: #00ff00;
-            padding: 10px;
+        #stats-panel {
+            position: absolute;
+            top: 20px;
             text-align: center;
-            font-family: monospace;
-            border-bottom: 2px solid #333;
         }
 
-        .main-container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            width: 90%;
-            max-width: 1000px;
-            flex-wrap: wrap;
-            justify-content: center;
+        #coffee-count {
+            font-size: 3rem;
+            font-family: 'Playfair Display', serif;
+            color: var(--espresso);
         }
 
-        .clicker-panel, .shop-panel {
-            background: var(--panel-color);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            flex: 1;
-            min-width: 300px;
-        }
-
-        #coffee-button {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, #8d6e63, #4e342e);
-            border: 10px solid #3e2723;
-            border-radius: 50%;
-            font-size: 80px;
+        .cup-container {
+            position: relative;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px auto;
             transition: transform 0.1s;
+            user-select: none;
         }
 
-        #coffee-button:active {
-            transform: scale(0.95);
+        .cup-container:active { transform: scale(0.95); }
+
+        #cup-svg { width: 250px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2)); }
+
+        /* Temperature Mechanic */
+        #temp-gauge {
+            width: 200px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 10px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--espresso);
         }
 
-        .upgrade-btn {
-            width: 100%;
+        #temp-fill {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(to right, #2196F3, #FFEB3B, #F44336);
+            transition: width 0.3s;
+        }
+
+        .temp-label { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
+
+        /* --- Right Side: The Coffee Shop --- */
+        #shop-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--latte);
+        }
+
+        h2 { font-family: 'Playfair Display', serif; margin-bottom: 20px; border-bottom: 2px solid var(--espresso); }
+
+        .item {
+            background: white;
             padding: 15px;
-            margin: 10px 0;
-            background: #444;
-            border: none;
             border-radius: 8px;
-            color: white;
-            text-align: left;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: 0.3s;
             cursor: pointer;
-            transition: background 0.3s;
         }
 
-        .upgrade-btn:hover { background: var(--coffee-brown); }
+        .item:hover { transform: translateX(-5px); box-shadow: 0 6px 10px rgba(0,0,0,0.1); }
+        .item.disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .stats { font-size: 1.2rem; margin-bottom: 10px; }
+        .item-info b { display: block; font-size: 1.1rem; }
+        .item-info span { font-size: 0.85rem; color: #666; }
+
+        .price { font-weight: 600; color: var(--accent); }
+
+        /* Notifications */
+        .click-pop {
+            position: absolute;
+            color: var(--accent);
+            font-weight: 700;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        #bonus-tag {
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <div id="news-ticker">Welcome to the Coffee Empire. Brewing operations commencing...</div>
-
-    <div class="main-container">
-        <!-- Clicker Section -->
-        <div class="clicker-panel">
-            <h1 id="title">Coffee Shop</h1>
-            <div class="stats">Cups Brewed: <span id="counter">0</span></div>
-            <div class="stats">CPS: <span id="cps">0</span></div>
-            <button id="coffee-button">☕</button>
-            <button id="prestige-btn" style="background:purple; width:100%; padding:10px;">Prestige (Multiplier: 1.0x)</button>
+    <div id="main-area">
+        <div id="stats-panel">
+            <div id="coffee-count">0 Beans</div>
+            <div id="cps-display">0 beans per second</div>
+            <div id="bonus-tag">PERFECT TEMP: 2x CLICK!</div>
         </div>
 
-        <!-- Shop Section -->
-        <div class="shop-panel">
-            <h2>Upgrades</h2>
-            <div id="shop-list">
-                <button class="upgrade-btn" onclick="buyUpgrade('barista')">Hire Barista (15 cups)</button>
-                <button class="upgrade-btn" onclick="buyUpgrade('machine')">Espresso Machine (100 cups)</button>
-                <button class="upgrade-btn" onclick="buyUpgrade('franchise')">Open Franchise (1000 cups)</button>
-            </div>
+        <div class="cup-container" id="cup">
+            <!-- Simple Coffee Cup SVG -->
+            <svg id="cup-svg" viewBox="0 0 100 100">
+                <path d="M20,30 Q20,80 50,80 Q80,80 80,30 Z" fill="#fff" stroke="#2C1B12" stroke-width="2"/>
+                <path d="M25,35 Q25,75 50,75 Q75,75 75,35 Z" fill="#4E342E" />
+                <path d="M80,40 Q95,40 95,55 Q95,70 80,70" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div id="temp-gauge"><div id="temp-fill"></div></div>
+        <div class="temp-label">Temperature: <span id="temp-val">50</span>°C (Ideal: 85-95°C)</div>
+    </div>
+
+    <div id="shop-area">
+        <h2>Upgrades & Baristas</h2>
+        <div id="shop-list">
+            <!-- Upgrades will be injected here -->
         </div>
     </div>
 
     <script>
-        // Game State Variables
-        let cups = 0;
-        let cps = 0;
-        let multiplier = 1.0;
-        
-        let inventory = {
-            barista: { count: 0, baseCost: 15, production: 0.5 },
-            machine: { count: 0, baseCost: 100, production: 5 },
-            franchise: { count: 0, baseCost: 1000, production: 50 }
-        };
+        // Game State
+        let beans = 0;
+        let totalBeans = 0;
+        let temp = 50;
+        let clickValue = 1;
+        let autoValue = 0;
 
-        // UI Update Function
-        function updateDisplay() {
-            document.getElementById('counter').innerText = Math.floor(cups);
-            document.getElementById('cps').innerText = cps.toFixed(1);
-            document.getElementById('prestige-btn').innerText = `Prestige (Multiplier: ${multiplier.toFixed(1)}x)`;
-        }
+        const shopItems = [
+            { id: 'barista', name: 'Rookie Barista', cost: 15, baseCps: 1, desc: 'Brewing manually is hard. Let them help.' },
+            { id: 'press', name: 'French Press', cost: 100, baseCps: 5, desc: 'Coarse grounds, better flow.' },
+            { id: 'espresso_machine', name: 'Vapor-9000', cost: 500, baseCps: 20, desc: 'High pressure, high reward.' },
+            { id: 'roastery', name: 'Local Roastery', cost: 2000, baseCps: 80, desc: 'Fresh beans every hour.' },
+            { id: 'plantation', name: 'Coffee Plantation', cost: 10000, baseCps: 300, desc: 'Direct from the source.' }
+        ];
 
-        // Logic for buying
-        function buyUpgrade(type) {
-            let item = inventory[type];
-            if (cups >= item.baseCost) {
-                cups -= item.baseCost;
-                item.count++;
-                item.baseCost = Math.floor(item.baseCost * 1.5);
-                calculateCPS();
-                updateDisplay();
-                // Refresh button text
-                document.getElementById(type + '-btn')?.innerText = `Buy ${type} (${item.baseCost})`;
-            }
-        }
+        let inventory = { barista: 0, press: 0, espresso_machine: 0, roastery: 0, plantation: 0 };
 
-        // Logic for math
-        function calculateCPS() {
-            cps = (
-                (inventory.barista.count * inventory.barista.production) +
-                (inventory.machine.count * inventory.machine.production) +
-                (inventory.franchise.count * inventory.franchise.production)
-            ) * multiplier;
-        }
+        // DOM Elements
+        const cup = document.getElementById('cup');
+        const beanDisplay = document.getElementById('coffee-count');
+        const cpsDisplay = document.getElementById('cps-display');
+        const tempFill = document.getElementById('temp-fill');
+        const tempValDisplay = document.getElementById('temp-val');
+        const bonusTag = document.getElementById('bonus-tag');
+        const shopList = document.getElementById('shop-list');
 
-        // Click Event
-        document.getElementById('coffee-button').addEventListener('click', () => {
-            cups += (1 * multiplier);
-            updateDisplay();
+        // Logic: Click
+        cup.addEventListener('mousedown', (e) => {
+            let multiplier = (temp >= 85 && temp <= 95) ? 2 : 1;
+            let earned = clickValue * multiplier;
+            
+            beans += earned;
+            totalBeans += earned;
+            
+            // Heat up on click
+            temp = Math.min(100, temp + 1.5);
+            
+            spawnPop(e.pageX, e.pageY, `+${earned}`);
+            updateUI();
         });
 
-        // Prestige System
-        document.getElementById('prestige-btn').addEventListener('click', () => {
-            if(confirm("Reset all progress for a permanent 0.5x multiplier boost?")) {
-                multiplier += 0.5;
-                cups = 0;
-                for(let key in inventory) {
-                    inventory[key].count = 0;
-                    inventory[key].baseCost = inventory[key].baseCost / 2; // Simplify cost reset
-                }
-                calculateCPS();
-                updateDisplay();
-            }
-        });
-
-        // Main Loop
+        // Logic: Passive Temperature Cooling
         setInterval(() => {
-            cups += (cps / 10); // Run 10 times a second for smoothness
-            updateDisplay();
+            if (temp > 20) temp -= 0.5;
+            
+            // Passive production
+            if (autoValue > 0) {
+                beans += (autoValue / 10);
+                totalBeans += (autoValue / 10);
+            }
+            
+            updateUI();
         }, 100);
 
-        // News Ticker Logic
-        const headlines = ["New beans imported from Ethiopia!", "Coffee demand reaches all-time high!", "Local barista wins latte art contest!"];
-        setInterval(() => {
-            document.getElementById('news-ticker').innerText = headlines[Math.floor(Math.random() * headlines.length)];
-        }, 8000);
+        function updateUI() {
+            beanDisplay.innerText = `${Math.floor(beans)} Beans`;
+            cpsDisplay.innerText = `${autoValue.toFixed(1)} beans per second`;
+            tempFill.style.width = `${temp}%`;
+            tempValDisplay.innerText = Math.floor(temp);
+            
+            // Bonus Highlight
+            if (temp >= 85 && temp <= 95) {
+                bonusTag.style.display = 'inline-block';
+                tempFill.style.background = '#4CAF50';
+            } else {
+                bonusTag.style.display = 'none';
+                tempFill.style.background = 'linear-gradient(to right, #2196F3, #FFEB3B, #F44336)';
+            }
 
+            renderShop();
+        }
+
+        function renderShop() {
+            shopList.innerHTML = '';
+            shopItems.forEach(item => {
+                const canAfford = beans >= item.cost;
+                const div = document.createElement('div');
+                div.className = `item ${canAfford ? '' : 'disabled'}`;
+                div.innerHTML = `
+                    <div class="item-info">
+                        <b>${item.name} (${inventory[item.id]})</b>
+                        <span>${item.desc}</span>
+                    </div>
+                    <div class="price">${Math.floor(item.cost)} beans</div>
+                `;
+                div.onclick = () => buyItem(item);
+                shopList.appendChild(div);
+            });
+        }
+
+        function buyItem(item) {
+            if (beans >= item.cost) {
+                beans -= item.cost;
+                inventory[item.id]++;
+                autoValue += item.baseCps;
+                item.cost *= 1.15; // Price inflation
+                updateUI();
+            }
+        }
+
+        function spawnPop(x, y, text) {
+            const pop = document.createElement('div');
+            pop.className = 'click-pop';
+            pop.style.left = x + 'px';
+            pop.style.top = y + 'px';
+            pop.innerText = text;
+            document.body.appendChild(pop);
+            setTimeout(() => pop.remove(), 1000);
+        }
+
+        // Initialize
+        renderShop();
     </script>
 </body>
 </html>
