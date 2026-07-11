@@ -1,350 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Idle Tycoon - Complete Professional Edition</title>
-    
-    <style>
-        /* 
-         * ==========================================================
-         * 1. GLOBAL VARIABLES & RESET
-         * ==========================================================
-         */
-        :root { 
-            --bg-color: #0f172a; 
-            --card-bg: #1e293b; 
-            --accent-green: #10b981; 
-            --text-main: #f8fafc; 
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --shadow-depth: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-            --card-border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Capital Ledger Co. — Idle Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   TOKENS
+   ========================================================== */
+:root{
+  --paper:      #EDE6D3;
+  --paper-dark: #E1D8BE;
+  --paper-line: rgba(32,36,29,0.10);
+  --ink:        #221D14;
+  --ink-soft:   #5B5748;
+  --brass:      #A9822F;
+  --brass-dark: #7D5F22;
+  --ledger:     #34503C;
+  --ledger-dk:  #24382A;
+  --stamp:      #9B3B30;
+  --stamp-dark: #7A2C24;
+  --paper-shadow: 0 12px 24px -8px rgba(34,29,20,0.35), 0 2px 6px rgba(34,29,20,0.15);
+}
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
-        }
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 20px; 
-            user-select: none; 
-            display: flex;
-            justify-content: center;
-        }
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
 
-        .container { 
-            max-width: 480px; 
-            width: 100%;
-        }
+body{
+  margin:0; padding:24px 16px 60px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 27px, var(--paper-line) 27px 28px),
+    radial-gradient(1200px 600px at 50% -10%, #F4EEDD 0%, var(--paper) 60%);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  display:flex; justify-content:center;
+  min-height:100vh;
+}
 
-        /* 
-         * ==========================================================
-         * 2. UI COMPONENTS: CARDS & BUTTONS
-         * ==========================================================
-         */
-        .card { 
-            background: var(--card-bg); 
-            padding: 24px; 
-            border-radius: 20px; 
-            border: var(--card-border);
-            box-shadow: var(--shadow-depth); 
-            margin-bottom: 20px;
-        }
+.container{ max-width:480px; width:100%; }
 
-        .action-button { 
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white; 
-            border: none; 
-            width: 100%; 
-            padding: 22px; 
-            font-size: 20px; 
-            font-weight: 800; 
-            border-radius: 16px; 
-            cursor: pointer; 
-            box-shadow: 0 10px 15px rgba(16, 185, 129, 0.3);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            margin-bottom: 20px;
-        }
+::selection{ background:var(--brass); color:var(--paper); }
 
-        .action-button:active { 
-            transform: scale(0.97); 
-            box-shadow: none;
-        }
+/* ==========================================================
+   HEADER
+   ========================================================== */
+.masthead{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-bottom:3px double var(--ink);
+  padding-bottom:10px; margin-bottom:20px;
+}
+.masthead h1{
+  margin:0; font-family:'Special Elite', monospace; font-size:22px;
+  letter-spacing:0.5px;
+}
+.masthead .sub{ font-size:11px; color:var(--ink-soft); letter-spacing:1.5px; margin-top:2px; }
+.settings-link{
+  cursor:pointer; color:var(--ink-soft); font-weight:600; font-size:12px;
+  letter-spacing:1px; border:1px solid var(--ink-soft); border-radius:20px;
+  padding:5px 12px; background:transparent;
+}
+.settings-link:hover{ background:var(--paper-dark); }
 
-        .upgrade-row { 
-            background: #252d3a; 
-            padding: 16px; 
-            border-radius: 12px; 
-            margin-bottom: 12px; 
-            cursor: pointer; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            position: relative; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            transition: background 0.2s ease;
-        }
+/* ==========================================================
+   CARD SHELL
+   ========================================================== */
+.card{
+  background:var(--paper-dark);
+  border:1px solid rgba(34,29,20,0.15);
+  border-radius:6px;
+  box-shadow:var(--paper-shadow);
+  margin-bottom:18px;
+  position:relative;
+}
+.card::before, .card::after{
+  content:''; position:absolute; width:14px; height:14px;
+  background:var(--brass); border-radius:50%;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.4), 0 1px 1px rgba(255,255,255,0.2);
+  top:8px;
+}
+.card::before{ left:8px; }
+.card::after{ right:8px; }
 
-        .upgrade-row:hover { background: #2d3748; }
+/* ==========================================================
+   LEDGER PANEL
+   ========================================================== */
+.ledger-panel{ padding:28px 20px 20px; text-align:center; }
+.ledger-label{ font-size:11px; letter-spacing:2px; color:var(--ink-soft); text-transform:uppercase; }
+#money-display{
+  font-family:'IBM Plex Mono', monospace; font-size:44px; font-weight:700;
+  color:var(--ledger-dk); margin:4px 0 8px; letter-spacing:-1px;
+  position:relative; display:inline-block;
+}
+#mps-display{ font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--ink-soft); }
+#mps-display b{ color:var(--ledger-dk); }
+.prestige-badge{
+  display:inline-block; margin-top:10px; font-size:11px; font-weight:600;
+  color:var(--stamp-dark); border:1px solid var(--stamp-dark); border-radius:20px;
+  padding:3px 10px; letter-spacing:0.5px;
+}
 
-        /* 
-         * ==========================================================
-         * 3. ANIMATIONS & MODALS
-         * ==========================================================
-         */
-        .bar-bg { 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 6px; 
-            background: #1e293b; 
-        }
+.float-gain{
+  position:absolute; left:50%; top:-4px; transform:translateX(-50%);
+  font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:16px;
+  color:var(--ledger); pointer-events:none; opacity:0;
+}
+@keyframes floatUp{
+  0%{ opacity:0; transform:translate(-50%, 6px); }
+  15%{ opacity:1; }
+  100%{ opacity:0; transform:translate(-50%, -30px); }
+}
+.float-gain.play{ animation:floatUp 0.9s ease-out forwards; }
 
-        .bar-fill { 
-            height: 100%; 
-            background: var(--accent-green); 
-            width: 0%; 
-            transition: width 0.3s ease; 
-        }
+/* ==========================================================
+   ACTION BUTTON
+   ========================================================== */
+.action-wrap{ padding:0 20px 20px; }
+.action-button{
+  background:linear-gradient(180deg, var(--ledger) 0%, var(--ledger-dk) 100%);
+  color:var(--paper);
+  border:none; width:100%; padding:20px; font-size:17px; font-weight:700;
+  font-family:'IBM Plex Sans', sans-serif; letter-spacing:0.5px;
+  border-radius:10px; cursor:pointer;
+  box-shadow:0 8px 0 var(--ledger-dk), 0 12px 16px rgba(0,0,0,0.25);
+  transition:transform 0.08s ease, box-shadow 0.08s ease;
+}
+.action-button:active{ transform:translateY(6px); box-shadow:0 2px 0 var(--ledger-dk), 0 4px 8px rgba(0,0,0,0.2); }
+.action-button:focus-visible{ outline:3px solid var(--brass); outline-offset:2px; }
 
-        #settings-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            opacity: 0; 
-            visibility: hidden; 
-            transition: 0.3s ease;
-        }
+/* ==========================================================
+   SHOP
+   ========================================================== */
+.shop-header{ display:flex; justify-content:space-between; align-items:center; margin:6px 0 10px; }
+.shop-header h3{ margin:0; font-family:'Special Elite', monospace; font-size:16px; font-weight:400; }
 
-        #settings-overlay.active { 
-            opacity: 1; 
-            visibility: visible; 
-        }
-    </style>
+.buy-toggle{ display:flex; border:1px solid var(--ink-soft); border-radius:8px; overflow:hidden; }
+.buy-toggle button{
+  background:transparent; border:none; padding:6px 10px; font-size:12px; font-weight:600;
+  font-family:'IBM Plex Mono', monospace; color:var(--ink-soft); cursor:pointer;
+}
+.buy-toggle button.active{ background:var(--ink); color:var(--paper); }
+.buy-toggle button:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
+
+.upgrade-row{
+  background:var(--paper); border:1px solid rgba(34,29,20,0.15);
+  border-left:4px solid var(--brass);
+  padding:14px 16px; border-radius:6px; margin-bottom:10px; cursor:pointer;
+  position:relative; overflow:hidden;
+  transition:background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.upgrade-row:hover{ background:#F3EDDC; }
+.upgrade-row.affordable{ border-left-color:var(--ledger); }
+.upgrade-row.maxed-preview{ opacity:0.55; cursor:default; }
+.upgrade-row:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+.row-top{ display:flex; justify-content:space-between; align-items:baseline; }
+.row-name{ font-weight:700; font-size:14.5px; }
+.row-level{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-soft); }
+.row-desc{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+.row-bottom{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+.row-cost{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:14px; color:var(--stamp-dark); }
+.row-yield{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ledger-dk); }
+
+.bar-bg{ position:absolute; bottom:0; left:0; width:100%; height:4px; background:rgba(34,29,20,0.08); }
+.bar-fill{ height:100%; background:var(--brass); width:0%; transition:width 0.25s ease; }
+
+/* stamp burst on purchase */
+.stamp-burst{
+  position:absolute; top:50%; right:14px; transform:translateY(-50%) rotate(-12deg) scale(0.5);
+  font-family:'Special Elite', monospace; font-size:13px; font-weight:700;
+  color:var(--stamp); border:2px solid var(--stamp); border-radius:4px; padding:2px 8px;
+  opacity:0; pointer-events:none;
+}
+@keyframes stampIn{
+  0%{ opacity:0; transform:translateY(-50%) rotate(-12deg) scale(1.8); }
+  30%{ opacity:0.9; transform:translateY(-50%) rotate(-12deg) scale(0.95); }
+  75%{ opacity:0.9; }
+  100%{ opacity:0; transform:translateY(-50%) rotate(-12deg) scale(0.9); }
+}
+.stamp-burst.play{ animation:stampIn 0.6s ease-out forwards; }
+
+/* ==========================================================
+   PRESTIGE CARD
+   ========================================================== */
+.prestige-card{ padding:20px; }
+.prestige-card h3{ margin:0 0 4px; font-family:'Special Elite', monospace; font-weight:400; font-size:16px; }
+.prestige-card p{ font-size:12.5px; color:var(--ink-soft); margin:4px 0; }
+.prestige-card b{ color:var(--ink); }
+#prestige-btn{
+  width:100%; padding:13px; border-radius:8px; border:none;
+  background:var(--stamp); color:var(--paper); font-weight:700; cursor:pointer;
+  font-family:'IBM Plex Sans', sans-serif; letter-spacing:0.3px;
+  box-shadow:0 5px 0 var(--stamp-dark);
+  transition:transform 0.08s ease, box-shadow 0.08s ease, opacity 0.15s ease;
+  margin-top:10px;
+}
+#prestige-btn:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--stamp-dark); }
+#prestige-btn:disabled{ cursor:not-allowed; }
+
+/* ==========================================================
+   RECEIPT TAPE (signature element)
+   ========================================================== */
+.tape-card{ padding:0; background:var(--ink); overflow:hidden; }
+.tape-card::before, .tape-card::after{ background:var(--brass); }
+.tape-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px 6px; color:var(--paper);
+}
+.tape-head span{ font-family:'Special Elite', monospace; font-size:12px; letter-spacing:1px; }
+.tape-scroll{
+  height:120px; overflow-y:auto; padding:0 16px 14px;
+  font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:#B9C9BC;
+  scrollbar-width:thin;
+}
+.tape-scroll::-webkit-scrollbar{ width:6px; }
+.tape-scroll::-webkit-scrollbar-thumb{ background:var(--brass-dark); border-radius:4px; }
+.tape-line{ display:flex; justify-content:space-between; padding:2px 0; border-bottom:1px dashed rgba(255,255,255,0.08); opacity:0; animation:lineIn 0.3s ease forwards; }
+.tape-line .t{ color:#7C8B7F; }
+.tape-line .a{ color:#DCE7DD; font-weight:600; }
+@keyframes lineIn{ from{ opacity:0; transform:translateY(-4px);} to{ opacity:1; transform:translateY(0);} }
+
+/* ==========================================================
+   SETTINGS / OFFLINE MODAL
+   ========================================================== */
+.overlay{
+  position:fixed; inset:0; background:rgba(20,17,11,0.78); z-index:999;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; visibility:hidden; transition:0.25s ease; padding:20px;
+}
+.overlay.active{ opacity:1; visibility:visible; }
+.overlay .card{ width:100%; max-width:340px; text-align:center; padding:24px 20px; }
+.overlay .card h3{ margin-top:0; font-family:'Special Elite', monospace; font-weight:400; }
+.overlay .card p{ color:var(--ink-soft); font-size:13.5px; line-height:1.5; }
+.modal-close{
+  padding:11px 24px; background:var(--ledger); border:none; border-radius:8px;
+  cursor:pointer; font-weight:700; color:var(--paper); font-family:'IBM Plex Sans',sans-serif;
+}
+.modal-close:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Header Section -->
-        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h1 style="margin:0; font-size: 22px; opacity: 0.9;">OFFICE TYCOON</h1>
-            <div onclick="toggleSettings(true)" style="cursor:pointer; color:var(--text-muted); font-weight: 600;">SETTINGS</div>
-        </header>
-
-        <!-- Stats Display -->
-        <div class="card" style="text-align:center;">
-            <div id="money-display" style="font-size: 48px; font-weight: 900; color: var(--accent-green);">$0</div>
-            <div id="mps-display" class="text-muted">Income: $0/sec</div>
-        </div>
-        
-        <!-- Interaction -->
-        <button class="action-button" onclick="handleManualClick(event)">MINE CAPITAL</button>
-
-        <!-- Shop Section -->
-        <h3 style="margin: 20px 0 10px 0;">Office Expansion</h3>
-        <div id="shop-container">
-            <!-- Intern Upgrade -->
-            <div class="upgrade-row" onclick="purchaseUpgrade('intern')">
-                <div><strong>Intern</strong><br><span class="text-muted">Level <span id="count-intern">0</span></span></div>
-                <div id="cost-intern" class="text-accent" style="font-weight:700;">$10</div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-intern"></div></div>
-            </div>
-            <!-- Auto-Miner Upgrade -->
-            <div class="upgrade-row" onclick="purchaseUpgrade('auto')">
-                <div><strong>Auto-Miner</strong><br><span class="text-muted">Level <span id="count-auto">0</span></span></div>
-                <div id="cost-auto" class="text-accent" style="font-weight:700;">$50</div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-auto"></div></div>
-            </div>
-            <!-- Factory Upgrade -->
-            <div class="upgrade-row" onclick="purchaseUpgrade('factory')">
-                <div><strong>Factory</strong><br><span class="text-muted">Level <span id="count-factory">0</span></span></div>
-                <div id="cost-factory" class="text-accent" style="font-weight:700;">$500</div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-factory"></div></div>
-            </div>
-            <!-- Office Upgrade -->
-            <div class="upgrade-row" onclick="purchaseUpgrade('office')">
-                <div><strong>Office Complex</strong><br><span class="text-muted">Level <span id="count-office">0</span></span></div>
-                <div id="cost-office" class="text-accent" style="font-weight:700;">$2,500</div>
-                <div class="bar-bg"><div class="bar-fill" id="bar-office"></div></div>
-            </div>
-        </div>
-
-        <!-- Prestige Section -->
-        <div class="card">
-            <h3 style="margin-top:0;">Career Prestige</h3>
-            <p style="font-size:14px; color: var(--text-muted);">Lifetime Earnings: <span id="total-earnings" style="color:white;">$0</span></p>
-            <button id="prestige-btn" onclick="initiatePrestige()" style="width:100%; padding:14px; border-radius:10px; border:none; background:var(--danger); color:white; font-weight:bold; cursor:pointer;">PRESTIGE (Locked)</button>
-        </div>
+<div class="container">
+  <header class="masthead">
+    <div>
+      <h1>CAPITAL LEDGER CO.</h1>
+      <div class="sub">EMPLOYEE FILE NO. 0001</div>
     </div>
+    <button class="settings-link" onclick="toggleOverlay('settings-overlay', true)">SETTINGS</button>
+  </header>
 
-    <!-- Settings Modal -->
-    <div id="settings-overlay">
-        <div class="card" style="width: 85%; text-align: center;">
-            <h3 style="margin-top:0;">Game Settings</h3>
-            <p style="color:var(--text-muted);">Auto-Save is running in the background.</p>
-            <button onclick="toggleSettings(false)" style="padding:12px 24px; background:var(--accent-green); border:none; border-radius:8px; cursor:pointer; font-weight:bold; color:black;">CLOSE MENU</button>
-        </div>
+  <div class="card ledger-panel">
+    <div class="ledger-label">On Hand</div>
+    <div id="money-display">$0<span class="float-gain" id="float-gain"></span></div>
+    <div id="mps-display">Income: <b id="mps-value">$0</b>/sec</div>
+    <div class="prestige-badge" id="prestige-badge">×1.00 multiplier</div>
+  </div>
+
+  <div class="action-wrap">
+    <button class="action-button" id="mine-btn" onclick="handleManualClick()">STAMP THE LEDGER</button>
+  </div>
+
+  <div class="shop-header">
+    <h3>Personnel &amp; Assets</h3>
+    <div class="buy-toggle" id="buy-toggle">
+      <button data-qty="1" class="active">×1</button>
+      <button data-qty="10">×10</button>
+      <button data-qty="max">MAX</button>
     </div>
+  </div>
+  <div id="shop-container"></div>
 
-    <script>
-        /**
-         * Game Configuration State
-         */
-        let state = {
-            money: 0, 
-            perClick: 1, 
-            perSecond: 0, 
-            totalEarnings: 0, 
-            prestigeMultiplier: 1.0,
-            costs: { intern: 10, auto: 50, factory: 500, office: 2500 },
-            counts: { intern: 0, auto: 0, factory: 0, office: 0 }
-        };
+  <div class="card prestige-card">
+    <h3>Career Prestige</h3>
+    <p>Lifetime earnings: <b id="total-earnings">$0</b></p>
+    <p>Current run: <b id="run-earnings">$0</b> &nbsp;•&nbsp; Prestige points: <b id="prestige-points">0</b></p>
+    <p id="prestige-preview">Reach $1,000,000 this run to earn your first point.</p>
+    <button id="prestige-btn" onclick="initiatePrestige()" disabled>PRESTIGE (LOCKED)</button>
+  </div>
 
-        /**
-         * Toggles the Settings Modal Visibility
-         * @param {boolean} show - Whether to show the overlay
-         */
-        function toggleSettings(show) {
-            const overlay = document.getElementById('settings-overlay');
-            if(show) {
-                overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-            }
-        }
+  <div class="card tape-card">
+    <div class="tape-head">
+      <span>ACTIVITY TAPE</span>
+      <span id="tape-clock">00:00:00</span>
+    </div>
+    <div class="tape-scroll" id="tape-scroll"></div>
+  </div>
+</div>
 
-        /**
-         * Handles the manual "Mine Capital" button click event
-         * @param {Event} e - The click event object
-         */
-        function handleManualClick(e) {
-            let income = Math.ceil(state.perClick * state.prestigeMultiplier);
-            state.money += income;
-            state.totalEarnings += income;
-            updateUI();
-        }
+<!-- Settings Modal -->
+<div id="settings-overlay" class="overlay">
+  <div class="card">
+    <h3>Game Settings</h3>
+    <p>Your progress saves automatically to this conversation's storage, and keeps earning while you're away (up to 8 hours, at half rate).</p>
+    <button class="modal-close" onclick="toggleOverlay('settings-overlay', false)">CLOSE</button>
+    <div style="margin-top:14px;">
+      <button class="modal-close" style="background:var(--stamp);" onclick="hardReset()">RESET SAVE</button>
+    </div>
+  </div>
+</div>
 
-        /**
-         * Logic to purchase and upgrade facilities
-         * @param {string} type - The key of the building being purchased
-         */
-        function purchaseUpgrade(type) {
-            if (state.money >= state.costs[type]) {
-                // Deduct cost
-                state.money -= state.costs[type];
-                state.counts[type]++;
-                
-                // Income Scaling Logic
-                if (type === 'intern') state.perClick += 1;
-                if (type === 'auto') state.perSecond += 2;
-                if (type === 'factory') state.perSecond += 10;
-                if (type === 'office') state.perSecond += 50;
-                
-                // Increase next cost
-                state.costs[type] = Math.floor(state.costs[type] * 1.25);
-                
-                updateUI();
-            }
-        }
+<!-- Offline earnings modal -->
+<div id="offline-overlay" class="overlay">
+  <div class="card">
+    <h3>Welcome Back</h3>
+    <p id="offline-message"></p>
+    <button class="modal-close" onclick="toggleOverlay('offline-overlay', false)">COLLECT</button>
+  </div>
+</div>
 
-        /**
-         * Refreshes the DOM elements, calculates progress bars, and saves state
-         */
-        function updateUI() {
-            // Update Text Displays
-            document.getElementById('money-display').innerText = '$' + Math.floor(state.money).toLocaleString();
-            document.getElementById('mps-display').innerText = `Income: $${Math.floor(state.perSecond * state.prestigeMultiplier).toLocaleString()}/sec`;
-            document.getElementById('total-earnings').innerText = '$' + Math.floor(state.totalEarnings).toLocaleString();
-            
-            // Loop through building types to sync UI
-            for(let key in state.counts) {
-                document.getElementById(`count-${key}`).innerText = state.counts[key];
-                document.getElementById(`cost-${key}`).innerText = '$' + state.costs[key].toLocaleString();
-                
-                // Calculate and update progress bar
-                let percent = (state.money / state.costs[key]) * 100;
-                let bar = document.getElementById(`bar-${key}`);
-                if(bar) {
-                    bar.style.width = Math.min(percent, 100) + '%';
-                }
-            }
-            
-            // Update Prestige Button State
-            const btn = document.getElementById('prestige-btn');
-            const canPrestige = state.totalEarnings >= 1000000;
-            btn.style.opacity = canPrestige ? "1" : "0.5";
-            btn.style.cursor = canPrestige ? "pointer" : "not-allowed";
-            btn.innerText = canPrestige ? "PRESTIGE NOW" : "PRESTIGE (Need $1M)";
-            
-            // Persist to storage
-            saveGame();
-        }
+<script>
+/* ==========================================================
+   CONFIG
+   ========================================================== */
+const BUILDINGS = [
+  { key:'intern',    name:'Intern',            desc:'Adds to every manual stamp.',        base:10,     growth:1.15, prod:1,    type:'click' },
+  { key:'auto',      name:'Auto-Miner',        desc:'Automates basic capital extraction.', base:50,     growth:1.15, prod:2,    type:'auto'  },
+  { key:'factory',   name:'Factory',           desc:'Mass-produces quarterly reports.',    base:500,    growth:1.16, prod:12,   type:'auto'  },
+  { key:'office',    name:'Office Complex',    desc:'Expands your corporate footprint.',   base:4000,   growth:1.17, prod:80,   type:'auto'  },
+  { key:'hq',        name:'Headquarters',      desc:'Centralizes operations nationwide.',  base:40000,  growth:1.18, prod:500,  type:'auto'  },
+  { key:'franchise', name:'Franchise Network', desc:'Licenses your empire worldwide.',     base:500000, growth:1.19, prod:4000, type:'auto'  },
+];
+const OFFLINE_CAP_SECONDS = 8 * 3600;
+const OFFLINE_EFFICIENCY  = 0.5;
+const SAVE_KEY = 'tycoonSave';
 
-        /**
-         * Saves current state to localStorage
-         */
-        function saveGame() {
-            localStorage.setItem('tycoonSave', JSON.stringify(state));
-        }
+/* ==========================================================
+   STATE
+   ========================================================== */
+let state = {
+  money: 0,
+  totalEarnings: 0,   // lifetime, never resets
+  runEarnings: 0,     // resets on prestige, drives prestige threshold
+  prestigePoints: 0,
+  counts: {},
+  lastSeen: Date.now(),
+};
+BUILDINGS.forEach(b => state.counts[b.key] = 0);
 
-        /**
-         * Prestige Reset Logic
-         */
-        function initiatePrestige() {
-            if (state.totalEarnings >= 1000000 && confirm("Reset all progress for a permanent 0.5x multiplier?")) {
-                // Apply prestige bonus
-                state.prestigeMultiplier += 0.5;
-                
-                // Reset stats
-                state.money = 0; 
-                state.perClick = 1; 
-                state.perSecond = 0; 
-                state.totalEarnings = 0;
-                state.costs = { intern: 10, auto: 50, factory: 500, office: 2500 };
-                state.counts = { intern: 0, auto: 0, factory: 0, office: 0 };
-                
-                updateUI();
-            }
-        }
+let buyQty = 1; // 1, 10, or 'max'
+let sessionStart = Date.now();
+let saveTimer = null;
 
-        /**
-         * Bootloader: Initializes local storage and starts the game loop
-         */
-        window.onload = () => {
-            const savedData = localStorage.getItem('tycoonSave');
-            if (savedData) {
-                try {
-                    state = JSON.parse(savedData);
-                } catch (e) {
-                    console.error("Failed to load save data", e);
-                }
-            }
-            
-            // Main Game Loop: Runs every second
-            setInterval(() => {
-                state.money += (state.perSecond * state.prestigeMultiplier);
-                state.totalEarnings += (state.perSecond * state.prestigeMultiplier);
-                updateUI();
-            }, 1000);
-            
-            updateUI();
-        };
-    </script>
-</body>
-</html>
+/* ==========================================================
+   NUMBER FORMATTING
+   ========================================================== */
+function fmt(n){
+  n = Math.floor(n);
+  const neg = n < 0;
+  let abs = Math.abs(n);
+  if (abs < 1000) return (neg?'-':'') + abs.toLocaleString();
+  const units = ['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
+  let u = -1;
+  while (abs >= 1000 && u < units.length - 1) { abs /= 1000; u++; }
+  const decimals = abs < 10 ? 2 : abs < 100 ? 1 : 0;
+  return (neg?'-':'') + abs.toFixed(decimals) + units[u];
+}
+function money(n){ return '$' + fmt(n); }
+
+/* ==========================================================
+   DERIVED VALUES
+   ========================================================== */
+function prestigeMultiplier(){ return 1 + state.prestigePoints * 0.1; }
+
+function perClickBase(){
+  const intern = BUILDINGS.find(b => b.key === 'intern');
+  return 1 + state.counts.intern * intern.prod;
+}
+function perSecondBase(){
+  return BUILDINGS.filter(b => b.type === 'auto')
+    .reduce((sum, b) => sum + state.counts[b.key] * b.prod, 0);
+}
+function currentCost(building){
+  return Math.ceil(building.base * Math.pow(building.growth, state.counts[building.key]));
+}
+function bulkCost(building, qty){
+  const c0 = currentCost(building);
+  const r = building.growth;
+  if (Math.abs(r - 1) < 1e-9) return c0 * qty;
+  return Math.ceil(c0 * (Math.pow(r, qty) - 1) / (r - 1));
+}
+function maxAffordable(building){
+  const c0 = currentCost(building);
+  const r = building.growth;
+  if (state.money < c0) return 0;
+  let est = Math.floor(Math.log((state.money * (r - 1)) / c0 + 1) / Math.log(r));
+  est = Math.max(0, est);
+  // correct rounding drift
+  while (bulkCost(building, est + 1) <= state.money) est++;
+  while (est > 0 && bulkCost(building, est) > state.money) est--;
+  return est;
+}
+
+/* ==========================================================
+   ACTIONS
+   ========================================================== */
+function handleManualClick(){
+  const gain = Math.ceil(perClickBase() * prestigeMultiplier());
+  addMoney(gain);
+  playFloatGain('+' + money(gain));
+  scheduleSave();
+}
+
+function addMoney(amount){
+  state.money += amount;
+  state.totalEarnings += amount;
+  state.runEarnings += amount;
+}
+
+function purchaseUpgrade(key){
+  const building = BUILDINGS.find(b => b.key === key);
+  const qty = buyQty === 'max' ? maxAffordable(building) : buyQty;
+  if (qty <= 0) return;
+  const cost = bulkCost(building, qty);
+  if (state.money < cost) return;
+  state.money -= cost;
+  state.counts[key] += qty;
+  logTape(building.name, `×${qty}`, '-' + money(cost));
+  playStampBurst(key);
+  renderAll();
+  scheduleSave();
+}
+
+function setBuyQty(qty, btnEl){
+  buyQty = qty === 'max' ? 'max' : parseInt(qty, 10);
+  document.querySelectorAll('#buy-toggle button').forEach(b => b.classList.remove('active'));
+  btnEl.classList.add('active');
+  renderShop();
+}
+
+function prestigeGainAvailable(){
+  return Math.floor(Math.sqrt(state.runEarnings / 1_000_000));
+}
+
+function initiatePrestige(){
+  const gain = prestigeGainAvailable();
+  if (gain < 1) return;
+  if (!confirm(`Prestige now for +${gain} point(s)? This resets your money and assets, but keeps your permanent multiplier.`)) return;
+  state.prestigePoints += gain;
+  state.money = 0;
+  state.runEarnings = 0;
+  BUILDINGS.forEach(b => state.counts[b.key] = 0);
+  logTape('PRESTIGE', `+${gain} pt`, `×${prestigeMultiplier().toFixed(2)}`);
+  renderAll();
+  scheduleSave();
+}
+
+function hardReset(){
+  if (!confirm('This wipes your entire save, including prestige points. Are you sure?')) return;
+  state = { money:0, totalEarnings:0, runEarnings:0, prestigePoints:0, counts:{}, lastSeen:Date.now() };
+  BUILDINGS.forEach(b => state.counts[b.key] = 0);
+  document.getElementById('tape-scroll').innerHTML = '';
+  renderAll();
+  scheduleSave();
+  toggleOverlay('settings-overlay', false);
+}
+
+/* ==========================================================
+   RENDERING
+   ========================================================== */
+function renderShop(){
+  const container = document.getElementById('shop-container');
+  container.innerHTML = '';
+  BUILDINGS.forEach(building => {
+    const owned = state.counts[building.key];
+    const qty = buyQty === 'max' ? Math.max(1, maxAffordable(building)) : buyQty;
+    const cost = bulkCost(building, qty);
+    const affordable = state.money >= cost;
+    const yieldText = building.type === 'click'
+      ? `+${fmt(building.prod * qty)}/stamp`
+      : `+${money(building.prod * qty)}/sec`;
+
+    const row = document.createElement('div');
+    row.className = 'upgrade-row' + (affordable ? ' affordable' : '');
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', `Buy ${building.name} for ${money(cost)}`);
+    row.onclick = () => purchaseUpgrade(building.key);
+    row.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); 
